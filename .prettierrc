@@ -8,6 +8,9 @@
 	"bracketSameLine": false,
 	"parser": "babel",
 	"arrowParens": "avoid",
+	"importOrder": ["^@core/(.*)$", "^@server/(.*)$", "^@ui/(.*)$", "^[./]"],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
 	"overrides": [
 		{
 			"files": ["*.md", "*.mdx"],
