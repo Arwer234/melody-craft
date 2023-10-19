@@ -22,7 +22,7 @@ const publicRoutes = [
 ];
 const privateRoutes = [
   {
-    path: 'home',
+    path: '',
     element: <Home />,
   },
 ];
@@ -30,7 +30,7 @@ const privateRoutes = [
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <Layout />,
+    element: <Layout isNavigationBarShown />,
     //loader: rootLoader,
     children: [
       ...publicRoutes,

@@ -3,12 +3,12 @@ import React from 'react';
 import { Box, Button, Link, Paper, TextField, Typography } from '@mui/material';
 import { Form, Formik } from 'formik';
 import { LocalUserRegisterSchema } from './SignUp.constants';
-import { LocalUser } from './SignUp.types';
+import { SignUpUser } from './SignUp.types';
 
 type SignUpProps = {};
 
 export function SignUp({}: SignUpProps) {
-  function handleSubmit(values: LocalUser) {
+  function handleSubmit(values: SignUpUser) {
     console.log(values);
   }
   return (
