@@ -1,16 +1,29 @@
-import React from 'react';
-
 import { Box, Button, Paper, TextField, Typography } from '@mui/material';
 import { Form, Formik } from 'formik';
 import { LocalUserLoginSchema } from './SignIn.constants';
 import { SignInUser } from '../SignIn/SignIn.types';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { signInUsingEmailAndPassword } from '../../auth';
+import { useSnackbar } from '../../hooks/useSnackbar';
+import { SNACKBAR_STATUS } from '../../hooks/useSnackbar.constants';
+import { ROUTE_PATHS } from '../../routes';
 
-type SignInProps = {};
+export function SignIn() {
+  const { showSnackbar } = useSnackbar();
+  const navigate = useNavigate();
 
-export function SignIn({}: SignInProps) {
-  function handleSubmit(values: SignInUser) {
-    console.log(values);
+  async function handleSubmit(values: SignInUser) {
+    const result = await signInUsingEmailAndPassword({
+      email: values.email,
+      password: values.password,
+    });
+
+    showSnackbar({
+      message: result.message,
+      status: result.status === 'signed_in' ? SNACKBAR_STATUS.SUCCESS : SNACKBAR_STATUS.ERROR,
+    });
+
+    navigate('/');
   }
   return (
     <Box
@@ -20,7 +33,15 @@ export function SignIn({}: SignInProps) {
       height="100%"
       alignItems="center"
     >
-      <Paper sx={{ padding: 2 }}>
+      <Paper
+        sx={{
+          padding: 2,
+          height: ['100%', 440],
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+        }}
+      >
         <Typography textAlign="center" variant="h4">
           Sign In
         </Typography>

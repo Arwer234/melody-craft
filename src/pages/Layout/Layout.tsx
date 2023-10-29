@@ -11,7 +11,7 @@ export function Layout() {
   const isDrawerShown = false;
 
   return (
-    <Box height="100%" width="100%">
+    <Box height="100%" width="100%" display="flex" flexDirection="column">
       <CssBaseline />
       <NavigationBar />
       {isDrawerShown && <SideDrawer width="256px" />}

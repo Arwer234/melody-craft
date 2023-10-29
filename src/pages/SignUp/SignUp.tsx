@@ -28,7 +28,15 @@ export function SignUp() {
       height="100%"
       alignItems="center"
     >
-      <Paper sx={{ padding: 2 }}>
+      <Paper
+        sx={{
+          padding: 2,
+          height: ['100%', 440],
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+        }}
+      >
         <Typography textAlign="center" variant="h4">
           Sign Up
         </Typography>
