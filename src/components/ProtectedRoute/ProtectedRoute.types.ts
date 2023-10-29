@@ -1,4 +1,4 @@
 export type ProtectedRouteProps = {
-  user: string;
+  user?: string;
   children: React.ReactNode;
 };

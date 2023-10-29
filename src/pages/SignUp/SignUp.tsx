@@ -1,9 +1,10 @@
 import React from 'react';
 
-import { Box, Button, Link, Paper, TextField, Typography } from '@mui/material';
+import { Box, Button, Paper, TextField, Typography } from '@mui/material';
 import { Form, Formik } from 'formik';
 import { LocalUserRegisterSchema } from './SignUp.constants';
 import { SignUpUser } from './SignUp.types';
+import { Link } from 'react-router-dom';
 
 type SignUpProps = {};
 
@@ -86,7 +87,7 @@ export function SignUp({}: SignUpProps) {
           )}
         </Formik>
         <Typography textAlign="center" variant="caption" component="p">
-          Already have an account?&nbsp;<Link href="/sign-in">Sign in</Link>
+          Already have an account?&nbsp;<Link to="/sign-in">Sign in</Link>
         </Typography>
       </Paper>
     </Box>

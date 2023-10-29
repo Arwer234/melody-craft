@@ -1,9 +1,10 @@
 import React from 'react';
 
-import { Box, Button, Link, Paper, TextField, Typography } from '@mui/material';
+import { Box, Button, Paper, TextField, Typography } from '@mui/material';
 import { Form, Formik } from 'formik';
 import { LocalUserLoginSchema } from './SignIn.constants';
 import { SignInUser } from '../SignIn/SignIn.types';
+import { Link } from 'react-router-dom';
 
 type SignInProps = {};
 
@@ -66,7 +67,7 @@ export function SignIn({}: SignInProps) {
           )}
         </Formik>
         <Typography textAlign="center" variant="caption" component="p">
-          New to Melody Craft?&nbsp;<Link href="/sign-up">Sign up</Link>
+          New to Melody Craft?&nbsp;<Link to="/sign-up">Sign up</Link>
         </Typography>
       </Paper>
     </Box>
