@@ -1,12 +1,13 @@
 import { Outlet } from 'react-router-dom';
 import './Layout.css';
-import { Box, CssBaseline } from '@mui/material';
+import { Alert, Box, CssBaseline, Snackbar } from '@mui/material';
 import NavigationBar from '../../components/NavigationBar/NavigationBar';
 import SideDrawer from '../../components/SideDrawer/SideDrawer';
-
-// type LayoutProps = {};
+import { useSnackbar } from '../../hooks/useSnackbar';
 
 export function Layout() {
+  const { snackbar } = useSnackbar();
+
   const isDrawerShown = false;
 
   return (
@@ -16,6 +17,11 @@ export function Layout() {
       {isDrawerShown && <SideDrawer width="256px" />}
 
       <Outlet />
+      {snackbar.isShown && (
+        <Snackbar anchorOrigin={{ horizontal: 'center', vertical: 'top' }} open={snackbar.isShown}>
+          <Alert severity={snackbar.status ?? undefined}>{snackbar.message}</Alert>
+        </Snackbar>
+      )}
     </Box>
   );
 }

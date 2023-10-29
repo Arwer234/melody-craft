@@ -33,6 +33,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
     "firebase-tools": "^12.7.0",
+    "firebaseui": "^6.1.0",
     "typescript": "^5.0.2",
     "vite": "^4.4.5"
   }

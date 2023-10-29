@@ -1,16 +1,24 @@
-import React from 'react';
-
 import { Box, Button, Paper, TextField, Typography } from '@mui/material';
 import { Form, Formik } from 'formik';
 import { LocalUserRegisterSchema } from './SignUp.constants';
 import { SignUpUser } from './SignUp.types';
 import { Link } from 'react-router-dom';
+import { createUserUsingEmailAndPassword } from '../../auth';
+import { useSnackbar } from '../../hooks/useSnackbar';
+import { SNACKBAR_STATUS } from '../../hooks/useSnackbar.constants';
 
-type SignUpProps = {};
+export function SignUp() {
+  const { showSnackbar } = useSnackbar();
 
-export function SignUp({}: SignUpProps) {
-  function handleSubmit(values: SignUpUser) {
-    console.log(values);
+  async function handleSubmit(values: SignUpUser) {
+    const result = await createUserUsingEmailAndPassword({
+      email: values.email,
+      password: values.password,
+    });
+    showSnackbar({
+      message: result.message,
+      status: result.status === 'signed_up' ? SNACKBAR_STATUS.SUCCESS : SNACKBAR_STATUS.ERROR,
+    });
   }
   return (
     <Box
@@ -25,7 +33,7 @@ export function SignUp({}: SignUpProps) {
           Sign Up
         </Typography>
         <Formik
-          initialValues={{ email: '', username: '', password: '', confirmPassword: '' }}
+          initialValues={{ email: '', password: '', confirmPassword: '' }}
           validationSchema={LocalUserRegisterSchema}
           onSubmit={handleSubmit}
         >
@@ -39,16 +47,6 @@ export function SignUp({}: SignUpProps) {
                 minWidth={320}
                 gap={1}
               >
-                <TextField
-                  type="username"
-                  name="username"
-                  label="Username"
-                  helperText={errors.username || ' '}
-                  error={!!errors.username}
-                  value={values.username}
-                  onChange={handleChange}
-                  fullWidth
-                />
                 <TextField
                   type="email"
                   name="email"
