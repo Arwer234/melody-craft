@@ -3,10 +3,9 @@ import { Form, Formik } from 'formik';
 import { LocalUserLoginSchema } from './SignIn.constants';
 import { SignInUser } from '../SignIn/SignIn.types';
 import { Link, useNavigate } from 'react-router-dom';
-import { signInUsingEmailAndPassword } from '../../auth';
-import { useSnackbar } from '../../hooks/useSnackbar';
-import { SNACKBAR_STATUS } from '../../hooks/useSnackbar.constants';
-import { ROUTE_PATHS } from '../../routes';
+import { useSnackbar } from '../../hooks/useSnackbar/useSnackbar';
+import { SNACKBAR_STATUS } from '../../hooks/useSnackbar/useSnackbar.constants';
+import { signInUsingEmailAndPassword } from '../../providers/AuthProvider/AuthProvider.helpers';
 
 export function SignIn() {
   const { showSnackbar } = useSnackbar();

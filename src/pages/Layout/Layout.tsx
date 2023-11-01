@@ -3,7 +3,7 @@ import './Layout.css';
 import { Alert, Box, CssBaseline, Snackbar } from '@mui/material';
 import NavigationBar from '../../components/NavigationBar/NavigationBar';
 import SideDrawer from '../../components/SideDrawer/SideDrawer';
-import { useSnackbar } from '../../hooks/useSnackbar';
+import { useSnackbar } from '../../hooks/useSnackbar/useSnackbar';
 
 export function Layout() {
   const { snackbar } = useSnackbar();

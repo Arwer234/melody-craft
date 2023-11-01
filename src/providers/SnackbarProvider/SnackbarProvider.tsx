@@ -1,18 +1,7 @@
 import React, { createContext, useState, useCallback } from 'react';
-import { SNACKBAR_STATUS } from '../hooks/useSnackbar.constants';
+import { Snackbar, SnackbarContextType } from './SnackbarProvider.types';
 
 const SNACKBAR_TIMEOUT = 5000;
-
-type Snackbar = {
-  isShown: boolean;
-  message: string | undefined;
-  status: (typeof SNACKBAR_STATUS)[keyof typeof SNACKBAR_STATUS] | undefined;
-};
-
-type SnackbarContextType = {
-  snackbar: Snackbar;
-  showSnackbar: ({ message, status }: Omit<Snackbar, 'isShown'>) => void;
-};
 
 export const SnackbarContext = createContext<SnackbarContextType | undefined>(undefined);
 
