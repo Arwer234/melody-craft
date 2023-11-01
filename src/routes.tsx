@@ -5,12 +5,14 @@ import { SignIn } from './pages/SignIn/SignIn';
 import { SignUp } from './pages/SignUp/SignUp';
 import { Home } from './pages/Home/Home';
 import { ProtectedRoute } from './components/ProtectedRoute/ProtectedRoute';
+import Profile from './pages/Profile/Profile';
 
 export const ROUTE_PATHS = {
   SIGN_IN: 'sign-in',
   SIGN_UP: 'sign-up',
   NOT_FOUND: 'not-found',
   HOME: '',
+  PROFILE: 'profile',
 };
 
 export const publicRoutes = [
@@ -32,6 +34,10 @@ export const privateRoutes = [
   {
     path: ROUTE_PATHS.HOME,
     element: <Home />,
+  },
+  {
+    path: ROUTE_PATHS.PROFILE,
+    element: <Profile />,
   },
 ];
 

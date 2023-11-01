@@ -1,7 +1,3 @@
-import React from 'react';
-
-type Props = {};
-
-export default function MyFiles({}: Props) {
+export default function MyFiles() {
   return <div>MyFiles</div>;
 }

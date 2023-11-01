@@ -1,7 +1,3 @@
-import React from 'react';
-
-type Props = {};
-
-export default function Discover({}: Props) {
+export default function Discover() {
   return <div>Discover</div>;
 }
