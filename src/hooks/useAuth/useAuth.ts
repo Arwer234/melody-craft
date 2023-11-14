@@ -4,5 +4,5 @@ import { AuthContext } from '../../providers/AuthProvider/AuthProvider';
 export default function useAuth() {
   const { userInfo } = useContext(AuthContext);
 
-  return { isUserSignedIn: !!userInfo?.uid };
+  return { isUserSignedIn: !!userInfo?.uid, userInfo };
 }

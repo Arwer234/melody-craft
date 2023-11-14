@@ -4,6 +4,8 @@ import {
   signInWithEmailAndPassword,
   signOut,
   getAuth,
+  updateProfile,
+  User,
 } from 'firebase/auth';
 import { AUTH_STATUSES } from './AuthProvider.constants';
 import { firebaseApp } from '../../firebase';
@@ -11,13 +13,18 @@ import { firebaseApp } from '../../firebase';
 export const auth = getAuth(firebaseApp);
 
 export async function createUserUsingEmailAndPassword({
+  username,
   email,
   password,
 }: {
+  username: string;
   email: string;
   password: string;
 }): Promise<{ status: (typeof AUTH_STATUSES)[keyof typeof AUTH_STATUSES]; message?: string }> {
   const result = await createUserWithEmailAndPassword(auth, email, password)
+    .then(async () => {
+      await updateProfile(auth.currentUser as User, { displayName: username });
+    })
     .then(() => {
       return { status: AUTH_STATUSES.SIGNED_UP, message: 'You account has been created!' };
     })
@@ -26,6 +33,7 @@ export async function createUserUsingEmailAndPassword({
 
       return { status: AUTH_STATUSES.SIGN_UP_FAILURE, message: errorMessage };
     });
+  console.log(auth.currentUser);
 
   return result;
 }

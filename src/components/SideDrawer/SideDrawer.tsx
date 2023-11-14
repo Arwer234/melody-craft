@@ -21,7 +21,6 @@ type Props = {
 export default function SideDrawer({ width }: Props) {
   const navigate = useNavigate();
   const { drawer } = useContext(UIContext);
-  console.log('drawer: ', drawer);
 
   function handleListItemClick(path: string) {
     navigate(path);

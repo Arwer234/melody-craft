@@ -12,6 +12,7 @@ export function SignUp() {
 
   async function handleSubmit(values: SignUpUser) {
     const result = await createUserUsingEmailAndPassword({
+      username: values.username,
       email: values.email,
       password: values.password,
     });
@@ -31,7 +32,7 @@ export function SignUp() {
       <Paper
         sx={{
           padding: 2,
-          height: ['100%', 440],
+          height: ['100%', 600],
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
@@ -41,7 +42,7 @@ export function SignUp() {
           Sign Up
         </Typography>
         <Formik
-          initialValues={{ email: '', password: '', confirmPassword: '' }}
+          initialValues={{ email: '', password: '', confirmPassword: '', username: '' }}
           validationSchema={LocalUserRegisterSchema}
           onSubmit={handleSubmit}
         >
@@ -52,9 +53,19 @@ export function SignUp() {
                 flexDirection="column"
                 alignItems="center"
                 sx={{ padding: 2 }}
-                minWidth={320}
+                minWidth={370}
                 gap={1}
               >
+                <TextField
+                  type="text"
+                  name="username"
+                  label="Username"
+                  helperText={errors.username || ' '}
+                  error={!!errors.username}
+                  value={values.username}
+                  onChange={handleChange}
+                  fullWidth
+                />
                 <TextField
                   type="email"
                   name="email"

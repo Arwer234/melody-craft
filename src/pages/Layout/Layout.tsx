@@ -18,7 +18,10 @@ export function Layout() {
       <CssBaseline />
       <NavigationBar />
       {isUserSignedIn && <SideDrawer width="256px" />}
-      <Box marginLeft={drawer.isOpen ? DRAWER_WIDTH : '0'} sx={{ transition: 'margin-left 200ms' }}>
+      <Box
+        marginLeft={drawer.isOpen && isUserSignedIn ? DRAWER_WIDTH : '0'}
+        sx={{ transition: 'margin-left 200ms', height: '100%' }}
+      >
         <Outlet />
       </Box>
 

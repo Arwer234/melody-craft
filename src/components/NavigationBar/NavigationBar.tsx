@@ -1,4 +1,4 @@
-import { AppBar, Button, IconButton, Toolbar, Typography } from '@mui/material';
+import { AppBar, Box, Button, IconButton, Toolbar, Typography } from '@mui/material';
 import useAuth from '../../hooks/useAuth/useAuth';
 import { signOutUser } from '../../providers/AuthProvider/AuthProvider.helpers';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +8,8 @@ import { useContext } from 'react';
 import { UIContext } from '../../providers/UIProvider/UIProvider';
 
 export default function NavigationBar() {
-  const { isUserSignedIn } = useAuth();
+  const { isUserSignedIn, userInfo } = useAuth();
+  console.log('userInfo: ', userInfo);
   const { showSnackbar, toggleDrawer } = useContext(UIContext);
   const navigate = useNavigate();
 
@@ -45,9 +46,11 @@ export default function NavigationBar() {
         </Typography>
 
         {isUserSignedIn && (
-          <Button onClick={handleSignOutClick} color="inherit">
-            Sign Out
-          </Button>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Button onClick={handleSignOutClick} color="inherit">
+              Sign Out
+            </Button>
+          </Box>
         )}
         {!isUserSignedIn && (
           <Button onClick={handleSignInClick} color="inherit">

@@ -6,6 +6,8 @@ import { SignUp } from './pages/SignUp/SignUp';
 import { Home } from './pages/Home/Home';
 import { ProtectedRoute } from './components/ProtectedRoute/ProtectedRoute';
 import Profile from './pages/Profile/Profile';
+import Discover from './pages/Discover/Discover';
+import MyFiles from './pages/MyFiles/MyFiles';
 
 export const ROUTE_PATHS = {
   SIGN_IN: 'sign-in',
@@ -13,6 +15,8 @@ export const ROUTE_PATHS = {
   NOT_FOUND: 'not-found',
   HOME: '',
   PROFILE: 'profile',
+  DISCOVER: 'discover',
+  MY_FILES: 'my-files',
 };
 
 export const publicRoutes = [
@@ -38,6 +42,14 @@ export const privateRoutes = [
   {
     path: ROUTE_PATHS.PROFILE,
     element: <Profile />,
+  },
+  {
+    path: ROUTE_PATHS.DISCOVER,
+    element: <Discover />,
+  },
+  {
+    path: ROUTE_PATHS.MY_FILES,
+    element: <MyFiles />,
   },
 ];
 

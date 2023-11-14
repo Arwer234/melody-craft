@@ -35,7 +35,7 @@ export function SignIn() {
       <Paper
         sx={{
           padding: 2,
-          height: ['100%', 440],
+          height: ['100%', 600],
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
@@ -56,7 +56,7 @@ export function SignIn() {
                 flexDirection="column"
                 alignItems="center"
                 sx={{ padding: 2 }}
-                minWidth={320}
+                minWidth={370}
                 gap={1}
               >
                 <TextField
