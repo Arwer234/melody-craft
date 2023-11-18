@@ -10,13 +10,13 @@ import Discover from './pages/Discover/Discover';
 import MyFiles from './pages/MyFiles/MyFiles';
 
 export const ROUTE_PATHS = {
-  SIGN_IN: 'sign-in',
-  SIGN_UP: 'sign-up',
-  NOT_FOUND: 'not-found',
-  HOME: '',
-  PROFILE: 'profile',
-  DISCOVER: 'discover',
-  MY_FILES: 'my-files',
+  SIGN_IN: '/sign-in',
+  SIGN_UP: '/sign-up',
+  NOT_FOUND: '/not-found',
+  HOME: '/',
+  PROFILE: '/profile',
+  DISCOVER: '/discover',
+  MY_FILES: '/my-files',
 };
 
 export const publicRoutes = [
@@ -55,7 +55,6 @@ export const privateRoutes = [
 
 export const router = createBrowserRouter([
   {
-    path: '/',
     element: <Layout />,
     children: [
       ...publicRoutes,

@@ -9,6 +9,8 @@ import {
 } from 'firebase/auth';
 import { AUTH_STATUSES } from './AuthProvider.constants';
 import { firebaseApp } from '../../firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../StoreProvider/StoreProvider.helpers';
 
 export const auth = getAuth(firebaseApp);
 
@@ -25,6 +27,16 @@ export async function createUserUsingEmailAndPassword({
     .then(async () => {
       await updateProfile(auth.currentUser as User, { displayName: username });
     })
+    .then(async () => {
+      if (!auth.currentUser) {
+        throw new Error('No current user!');
+      }
+
+      await setDoc(doc(db, 'users', auth.currentUser.uid), {
+        displayName: username,
+        identifier: auth.currentUser?.email,
+      });
+    })
     .then(() => {
       return { status: AUTH_STATUSES.SIGNED_UP, message: 'You account has been created!' };
     })
@@ -33,7 +45,6 @@ export async function createUserUsingEmailAndPassword({
 
       return { status: AUTH_STATUSES.SIGN_UP_FAILURE, message: errorMessage };
     });
-  console.log(auth.currentUser);
 
   return result;
 }

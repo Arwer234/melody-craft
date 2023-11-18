@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSnackbar } from '../../hooks/useSnackbar/useSnackbar';
 import { SNACKBAR_STATUS } from '../../hooks/useSnackbar/useSnackbar.constants';
 import { signInUsingEmailAndPassword } from '../../providers/AuthProvider/AuthProvider.helpers';
+import { ROUTE_PATHS } from '../../routes';
 
 export function SignIn() {
   const { showSnackbar } = useSnackbar();
@@ -22,7 +23,7 @@ export function SignIn() {
       status: result.status === 'signed_in' ? SNACKBAR_STATUS.SUCCESS : SNACKBAR_STATUS.ERROR,
     });
 
-    navigate('/');
+    navigate(ROUTE_PATHS.HOME);
   }
   return (
     <Box

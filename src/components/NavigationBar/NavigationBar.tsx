@@ -9,7 +9,6 @@ import { UIContext } from '../../providers/UIProvider/UIProvider';
 
 export default function NavigationBar() {
   const { isUserSignedIn, userInfo } = useAuth();
-  console.log('userInfo: ', userInfo);
   const { showSnackbar, toggleDrawer } = useContext(UIContext);
   const navigate = useNavigate();
 

@@ -2,13 +2,16 @@ import { Box, Button, Paper, TextField, Typography } from '@mui/material';
 import { Form, Formik } from 'formik';
 import { LocalUserRegisterSchema } from './SignUp.constants';
 import { SignUpUser } from './SignUp.types';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSnackbar } from '../../hooks/useSnackbar/useSnackbar';
 import { SNACKBAR_STATUS } from '../../hooks/useSnackbar/useSnackbar.constants';
 import { createUserUsingEmailAndPassword } from '../../providers/AuthProvider/AuthProvider.helpers';
+import { AUTH_STATUSES } from '../../providers/AuthProvider/AuthProvider.constants';
+import { ROUTE_PATHS } from '../../routes';
 
 export function SignUp() {
   const { showSnackbar } = useSnackbar();
+  const navigate = useNavigate();
 
   async function handleSubmit(values: SignUpUser) {
     const result = await createUserUsingEmailAndPassword({
@@ -16,10 +19,14 @@ export function SignUp() {
       email: values.email,
       password: values.password,
     });
+
     showSnackbar({
       message: result.message,
-      status: result.status === 'signed_up' ? SNACKBAR_STATUS.SUCCESS : SNACKBAR_STATUS.ERROR,
+      status:
+        result.status === AUTH_STATUSES.SIGNED_UP ? SNACKBAR_STATUS.SUCCESS : SNACKBAR_STATUS.ERROR,
     });
+
+    navigate(ROUTE_PATHS.HOME);
   }
   return (
     <Box

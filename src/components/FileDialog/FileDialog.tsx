@@ -1,4 +1,3 @@
-import { AttachFile } from '@mui/icons-material';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { MuiFileInput } from 'mui-file-input';
 import { useState } from 'react';
@@ -6,7 +5,7 @@ import { useState } from 'react';
 type FileDialog = {
   isOpen: boolean;
   onClose: () => void;
-  onUpload: () => void;
+  onUpload: (file: File) => void;
 };
 
 export default function FileDialog({ isOpen, onClose, onUpload }: FileDialog) {
@@ -18,7 +17,11 @@ export default function FileDialog({ isOpen, onClose, onUpload }: FileDialog) {
   }
 
   function handleUploadClick() {
-    onUpload();
+    if (file) {
+      onUpload(file);
+    }
+
+    onClose();
   }
 
   function handleCancelClick() {
