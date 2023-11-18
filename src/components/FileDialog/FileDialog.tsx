@@ -13,7 +13,6 @@ export default function FileDialog({ isOpen, onClose, onUpload }: FileDialog) {
 
   function handleFileUpload(nextFile: File | null) {
     if (nextFile) setFile(nextFile);
-    console.log(nextFile);
   }
 
   function handleUploadClick() {

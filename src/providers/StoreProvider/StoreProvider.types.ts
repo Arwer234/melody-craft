@@ -6,7 +6,6 @@ export type StoredFile = {
 };
 
 export type FileMetadata = {
-  contentType: string;
   name: string;
   size: number;
   type: FileType;
