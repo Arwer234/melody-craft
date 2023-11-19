@@ -28,6 +28,7 @@ export async function addMusicFile(props: StoredFile) {
     size: props.metadata.size,
     type: props.metadata.type,
     ownerUid: props.metadata.ownerUid,
+    datetime: props.metadata.datetime,
   }).then(() => {
     uploadBytes(storageRef, props.file).catch((error: StorageError) => {
       throw new StorageError(error.code as StorageErrorCode, error.message);

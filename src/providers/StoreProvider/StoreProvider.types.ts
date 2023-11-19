@@ -10,4 +10,5 @@ export type FileMetadata = {
   size: number;
   type: FileType;
   ownerUid: string;
+  datetime: string;
 };
