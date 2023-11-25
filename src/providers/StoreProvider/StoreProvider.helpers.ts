@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -9,9 +10,17 @@ import {
   where,
 } from 'firebase/firestore';
 import { FileMetadata, StoredFile } from './StoreProvider.types';
-import { StorageError, StorageErrorCode, getStorage, ref, uploadBytes } from 'firebase/storage';
+import {
+  StorageError,
+  StorageErrorCode,
+  deleteObject,
+  getStorage,
+  ref,
+  uploadBytes,
+} from 'firebase/storage';
 import { firebaseApp } from '../../firebase';
 import { STORE_ERRORS } from './StoreProvider.constants';
+import { auth } from '../AuthProvider/AuthProvider.helpers';
 
 export const db = getFirestore(firebaseApp);
 export const storage = getStorage(firebaseApp);
@@ -46,4 +55,23 @@ export async function getMusicFilesData({ ownerUid }: { ownerUid: string }) {
     data.push({ name: doc.id, ...(doc.data() as Omit<FileMetadata, 'name'>) });
   });
   return data;
+}
+
+export async function deleteMusicFile(props: { fileName: string; type: string }) {
+  const fileRef = ref(storage, `${props.type}s/${props.fileName}`);
+  const existingDocSnap = await getDoc(doc(db, 'files', props.fileName));
+
+  if (!existingDocSnap.exists()) {
+    throw new Error(STORE_ERRORS.NO_FILE);
+  }
+
+  deleteObject(fileRef)
+    .then(() => {
+      deleteDoc(doc(db, 'files', props.fileName)).catch((error: StorageError) => {
+        throw new StorageError(error.code as StorageErrorCode, error.message);
+      });
+    })
+    .catch((error: StorageError) => {
+      throw new StorageError(error.code as StorageErrorCode, error.message);
+    });
 }

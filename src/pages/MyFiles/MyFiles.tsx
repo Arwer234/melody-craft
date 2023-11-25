@@ -6,12 +6,20 @@ import FileDialog from './FileDialog/FileDialog';
 import { FileType, MusicTileDialogMode } from './MyFiles.types';
 import {
   addMusicFile,
+  deleteMusicFile,
   getMusicFilesData,
 } from '../../providers/StoreProvider/StoreProvider.helpers';
 import { FileMetadata } from '../../providers/StoreProvider/StoreProvider.types';
 import useAuth from '../../hooks/useAuth/useAuth';
 import { useSnackbar } from '../../hooks/useSnackbar/useSnackbar';
-import { ADD_MUSIC_FILE_MESSAGES, SAMPLES_LIMIT, TRACKS_LIMIT } from './MyFiles.constants';
+import {
+  ADD_MUSIC_FILE_MESSAGES,
+  REMOVE_MUSIC_FILE_MESSAGE,
+  REMOVE_MUSIC_FILE_MESSAGES,
+  REMOVE_MUSIC_FILE_MESSAGEs,
+  SAMPLES_LIMIT,
+  TRACKS_LIMIT,
+} from './MyFiles.constants';
 import { STORE_ERRORS } from '../../providers/StoreProvider/StoreProvider.constants';
 import MusicTileList from './MusicTileList/MusicTileList';
 import { isUploadedFilesLimitExceeded } from './MyFiles.helpers';
@@ -20,6 +28,7 @@ import MusicTileDialog from './MusicTileDialog/MusicTileDialog';
 export default function MyFiles() {
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
+  const [selectedFileType, setSelectedFileType] = useState<FileType>('track');
   const [musicTileDialogMode, setMusicTileDialogMode] = useState<MusicTileDialogMode>(null);
   const [uploadFileType, setUploadFileType] = useState<FileType>('track');
   const [musicFilesData, setMusicFilesData] = useState<Array<FileMetadata>>([]);
@@ -63,17 +72,41 @@ export default function MyFiles() {
     setIsUploadDialogOpen(previousState => !previousState);
   }
 
-  function handleMusicTileDialogToggle(mode: MusicTileDialogMode, fileName: string) {
+  function handleMusicTileDialogToggle(
+    mode: MusicTileDialogMode,
+    fileName: string,
+    type: FileType,
+  ) {
     setMusicTileDialogMode(mode);
     setSelectedFileName(fileName);
+    setSelectedFileType(type);
   }
 
-  function handleMusicTileDialogEdit(fileName: string) {
-    console.log('edit', selectedFileName, fileName);
-    setMusicTileDialogMode(null);
-  }
-  function handleMusicTileDialogRemove() {
-    console.log('remove', selectedFileName);
+  function handleMusicTileDialogRemove(type: FileType) {
+    deleteMusicFile({ fileName: selectedFileName, type })
+      .then(() => {
+        setTimeout(() => {
+          getMusicFilesData({ ownerUid: userInfo!.uid })
+            .then(data => {
+              console.log('set with data', data);
+              setMusicFilesData(data);
+            })
+            .catch(error => {
+              showSnackbar({
+                message: `${REMOVE_MUSIC_FILE_MESSAGES.FAILURE} ${error}`,
+                status: 'error',
+              });
+            });
+
+          showSnackbar({ message: REMOVE_MUSIC_FILE_MESSAGES.SUCCESS, status: 'success' });
+        }, 1000);
+      })
+      .catch(error => {
+        showSnackbar({
+          message: `${REMOVE_MUSIC_FILE_MESSAGES.FAILURE} ${error}`,
+          status: 'error',
+        });
+      });
     setMusicTileDialogMode(null);
   }
 
@@ -101,8 +134,7 @@ export default function MyFiles() {
         isOpen={musicTileDialogMode !== null}
         mode={musicTileDialogMode}
         onClose={() => setMusicTileDialogMode(null)}
-        onAccept={handleMusicTileDialogEdit}
-        onConfirm={handleMusicTileDialogRemove}
+        onConfirm={() => handleMusicTileDialogRemove(selectedFileType)}
         fileName={selectedFileName}
       />
 
@@ -125,11 +157,8 @@ export default function MyFiles() {
             {sampleFilesData.length === 0 && <EmptyView description="There are no files yet!" />}
             {sampleFilesData.length > 0 && (
               <MusicTileList
-                onEdit={(fileName: string) => {
-                  handleMusicTileDialogToggle('edit', fileName);
-                }}
                 onRemove={(fileName: string) => {
-                  handleMusicTileDialogToggle('remove', fileName);
+                  handleMusicTileDialogToggle('remove', fileName, 'sample');
                 }}
                 fileType="sample"
                 musicFilesData={sampleFilesData}
@@ -168,11 +197,8 @@ export default function MyFiles() {
             {trackFilesData.length === 0 && <EmptyView description="There are no files yet!" />}
             {trackFilesData.length > 0 && (
               <MusicTileList
-                onEdit={(fileName: string) => {
-                  handleMusicTileDialogToggle('edit', fileName);
-                }}
                 onRemove={(fileName: string) => {
-                  handleMusicTileDialogToggle('remove', fileName);
+                  handleMusicTileDialogToggle('remove', fileName, 'track');
                 }}
                 fileType="track"
                 musicFilesData={trackFilesData}

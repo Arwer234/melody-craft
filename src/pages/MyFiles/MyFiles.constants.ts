@@ -4,6 +4,11 @@ export const ADD_MUSIC_FILE_MESSAGES = {
   FILE_EXISTS: 'This file already exists in storage!',
 };
 
+export const REMOVE_MUSIC_FILE_MESSAGES = {
+  SUCCESS: 'The file has been deleted!',
+  FAILURE: 'There was an error!',
+};
+
 export const TRACKS_LIMIT = 3;
 
 export const SAMPLES_LIMIT = 5;

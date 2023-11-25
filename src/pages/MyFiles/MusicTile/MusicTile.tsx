@@ -1,19 +1,15 @@
 import { Box, IconButton, Paper, Typography } from '@mui/material';
 import { MusicTileProps } from './MusicTile.types';
 import { useState } from 'react';
-import { DeleteForever, DriveFileRenameOutline, PlayArrow } from '@mui/icons-material';
+import { DeleteForever, PlayArrow } from '@mui/icons-material';
 
-export default function MusicTile({ onEdit, onRemove, name }: MusicTileProps) {
+export default function MusicTile({ onRemove, name }: MusicTileProps) {
   const [file, setFile] = useState();
 
   const [fileName, fileExtension] = name.split('.');
 
   function handlePlayClick() {
     console.log('play');
-  }
-
-  function handleRenameClick() {
-    onEdit(name);
   }
 
   function handleRemoveClick() {
@@ -28,9 +24,6 @@ export default function MusicTile({ onEdit, onRemove, name }: MusicTileProps) {
           <Box>
             <IconButton onClick={handlePlayClick} color="secondary">
               <PlayArrow />
-            </IconButton>
-            <IconButton onClick={handleRenameClick}>
-              <DriveFileRenameOutline />
             </IconButton>
             <IconButton onClick={handleRemoveClick}>
               <DeleteForever />
