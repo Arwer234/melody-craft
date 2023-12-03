@@ -1,7 +1,7 @@
 import { CloudUpload } from '@mui/icons-material';
 import { Box, Button, Paper, Typography } from '@mui/material';
 import EmptyView from '../../components/EmptyView/EmptyView';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import FileDialog from './FileDialog/FileDialog';
 import { FileType, MusicTileDialogMode } from './MyFiles.types';
 import {
@@ -14,9 +14,7 @@ import useAuth from '../../hooks/useAuth/useAuth';
 import { useSnackbar } from '../../hooks/useSnackbar/useSnackbar';
 import {
   ADD_MUSIC_FILE_MESSAGES,
-  REMOVE_MUSIC_FILE_MESSAGE,
   REMOVE_MUSIC_FILE_MESSAGES,
-  REMOVE_MUSIC_FILE_MESSAGEs,
   SAMPLES_LIMIT,
   TRACKS_LIMIT,
 } from './MyFiles.constants';
@@ -24,6 +22,7 @@ import { STORE_ERRORS } from '../../providers/StoreProvider/StoreProvider.consta
 import MusicTileList from './MusicTileList/MusicTileList';
 import { isUploadedFilesLimitExceeded } from './MyFiles.helpers';
 import MusicTileDialog from './MusicTileDialog/MusicTileDialog';
+import { UIContext } from '../../providers/UIProvider/UIProvider';
 
 export default function MyFiles() {
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
@@ -34,6 +33,7 @@ export default function MyFiles() {
   const [musicFilesData, setMusicFilesData] = useState<Array<FileMetadata>>([]);
   const { userInfo } = useAuth();
   const { showSnackbar } = useSnackbar();
+  const { setSrc } = useContext(UIContext);
 
   const sampleFilesData = musicFilesData.filter(fileData => fileData.type === 'sample');
   const trackFilesData = musicFilesData.filter(fileData => fileData.type === 'track');

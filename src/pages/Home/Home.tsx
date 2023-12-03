@@ -1,7 +1,5 @@
-import React from 'react';
+import { Box } from '@mui/material';
 
-type Props = {};
-
-export function Home({}: Props) {
-  return <div>Home</div>;
+export function Home() {
+  return <Box sx={{ height: '100%' }}></Box>;
 }

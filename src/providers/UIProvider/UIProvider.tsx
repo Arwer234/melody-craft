@@ -1,5 +1,11 @@
 import React, { createContext, useState, useCallback } from 'react';
-import { DrawerType, SnackbarType, UIContextType } from './UIProvider.types';
+import {
+  AudioPlayerType,
+  DrawerType,
+  SnackbarType,
+  SrcType,
+  UIContextType,
+} from './UIProvider.types';
 
 const SNACKBAR_TIMEOUT = 5000;
 
@@ -8,6 +14,10 @@ export const UIContext = createContext<UIContextType>({
   showSnackbar: () => {},
   toggleDrawer: () => {},
   snackbar: { isShown: false, message: undefined, status: undefined },
+  audioPlayer: { isPlaying: false, isShown: false, src: { tracks: [], samples: [] } },
+  togglePlay: () => {},
+  setSrc: () => {},
+  toggleAudioPlayer: () => {},
 });
 
 export function UIProvider({ children }: { children: React.ReactNode }) {
@@ -19,11 +29,28 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
   const [drawer, setDrawer] = useState<DrawerType>({
     isOpen: false,
   });
+  const [audioPlayer, setAudioPlayer] = useState<AudioPlayerType>({
+    isPlaying: false,
+    isShown: false,
+    src: { tracks: [], samples: [] },
+  });
 
   function toggleDrawer() {
     setDrawer(prevState => {
       return { ...prevState, isOpen: !prevState.isOpen };
     });
+  }
+
+  function togglePlay() {
+    setAudioPlayer(previousState => ({ ...previousState, isPlaying: !previousState.isPlaying }));
+  }
+
+  function toggleAudioPlayer() {
+    setAudioPlayer(previousState => ({ ...previousState, isShown: !previousState.isShown }));
+  }
+
+  function setSrc(src: SrcType) {
+    setAudioPlayer(previousState => ({ ...previousState, src: src }));
   }
 
   const showSnackbar = useCallback(({ message, status }: Omit<SnackbarType, 'isShown'>) => {
@@ -34,7 +61,18 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <UIContext.Provider value={{ snackbar, showSnackbar, drawer, toggleDrawer }}>
+    <UIContext.Provider
+      value={{
+        snackbar,
+        showSnackbar,
+        drawer,
+        toggleDrawer,
+        audioPlayer,
+        togglePlay,
+        setSrc,
+        toggleAudioPlayer,
+      }}
+    >
       {children}
     </UIContext.Provider>
   );

@@ -75,3 +75,7 @@ export async function deleteMusicFile(props: { fileName: string; type: string })
       throw new StorageError(error.code as StorageErrorCode, error.message);
     });
 }
+
+export async function getMusicFilesSrc() {
+  const fileMetadata = await getMusicFilesData({ ownerUid: auth.currentUser!.uid });
+}
