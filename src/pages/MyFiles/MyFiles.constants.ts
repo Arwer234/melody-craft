@@ -9,6 +9,10 @@ export const REMOVE_MUSIC_FILE_MESSAGES = {
   FAILURE: 'There was an error!',
 };
 
+export const PLAY_MUSIC_MESSAGES = {
+  FAILURE: 'There was an error, try again!',
+};
+
 export const TRACKS_LIMIT = 3;
 
 export const SAMPLES_LIMIT = 5;

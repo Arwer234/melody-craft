@@ -1,15 +1,12 @@
 import { Box, IconButton, Paper, Typography } from '@mui/material';
 import { MusicTileProps } from './MusicTile.types';
-import { useState } from 'react';
 import { DeleteForever, PlayArrow } from '@mui/icons-material';
 
-export default function MusicTile({ onRemove, name }: MusicTileProps) {
-  const [file, setFile] = useState();
-
+export default function MusicTile({ onRemove, onPlay, name, type }: MusicTileProps) {
   const [fileName, fileExtension] = name.split('.');
 
   function handlePlayClick() {
-    console.log('play');
+    onPlay(name, type);
   }
 
   function handleRemoveClick() {

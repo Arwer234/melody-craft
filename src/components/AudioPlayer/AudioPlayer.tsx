@@ -1,21 +1,38 @@
 import { Box } from '@mui/material';
 import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
+import { UIContext } from '../../providers/UIProvider/UIProvider';
+import { useContext, useEffect, useRef } from 'react';
+import H5AudioPlayer from 'react-h5-audio-player';
 
 type BasicAudioPlayerProps = {
   offset: string;
 };
-
+// TODO: add Next/Prev click.
 export default function BasicAudioPlayer({ offset }: BasicAudioPlayerProps) {
+  const { audioPlayer } = useContext(UIContext);
+  const ref = useRef<H5AudioPlayer>(null);
+
+  useEffect(() => {
+    if (ref.current !== null && ref.current.audio.current !== null) {
+      if (audioPlayer.isPlaying) {
+        void ref.current.audio.current.play();
+      } else ref.current.audio.current.pause();
+    }
+  }, [audioPlayer.isPlaying]);
+
   return (
     <Box
       position="fixed"
       sx={{ bottom: 0, right: 0, width: `calc(100% - ${offset})`, transition: 'width 200ms' }}
     >
       <AudioPlayer
-        src="https://firebasestorage.googleapis.com/v0/b/melody-craft.appspot.com/o/tracks%2Foutput1.webm?alt=media&token=22cfcf2f-5a2d-4fa7-9315-b796902c6fa9"
-        onPlay={e => console.log('onPlay')}
+        ref={ref}
+        autoPlay={audioPlayer.isPlaying}
+        src={audioPlayer.src}
+        autoPlayAfterSrcChange
         onClickNext={e => console.log('click next')}
+        onClickPrevious={e => console.log('click prev')}
         // other props here
       />
     </Box>

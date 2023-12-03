@@ -12,3 +12,9 @@ export type FileMetadata = {
   ownerUid: string;
   datetime: string;
 };
+
+export type StoreContextType = {
+  musicFilesMetadata: Array<FileMetadata>;
+  fetchMusicFilesMetadata: () => void;
+  isMusicFilesMetadataLoaded: boolean;
+};

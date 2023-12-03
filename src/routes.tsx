@@ -8,6 +8,7 @@ import { ProtectedRoute } from './components/ProtectedRoute/ProtectedRoute';
 import Profile from './pages/Profile/Profile';
 import Discover from './pages/Discover/Discover';
 import MyFiles from './pages/MyFiles/MyFiles';
+import Editor from './pages/Editor/Editor';
 
 export const ROUTE_PATHS = {
   SIGN_IN: '/sign-in',
@@ -17,6 +18,7 @@ export const ROUTE_PATHS = {
   PROFILE: '/profile',
   DISCOVER: '/discover',
   MY_FILES: '/my-files',
+  EDITOR: '/editor',
 };
 
 export const publicRoutes = [
@@ -50,6 +52,10 @@ export const privateRoutes = [
   {
     path: ROUTE_PATHS.MY_FILES,
     element: <MyFiles />,
+  },
+  {
+    path: ROUTE_PATHS.EDITOR,
+    element: <Editor />,
   },
 ];
 

@@ -5,4 +5,6 @@ export type MusicTileListProps = {
   musicFilesData: Array<FileMetadata>;
   fileType: FileType;
   onRemove: (fileName: string) => void;
+  onPlay: (fileName: string, fileType: FileType) => void;
+  isLoaded: boolean;
 };

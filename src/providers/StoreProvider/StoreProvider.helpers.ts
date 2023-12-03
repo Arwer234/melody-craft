@@ -14,12 +14,14 @@ import {
   StorageError,
   StorageErrorCode,
   deleteObject,
+  getDownloadURL,
   getStorage,
   ref,
   uploadBytes,
 } from 'firebase/storage';
 import { firebaseApp } from '../../firebase';
 import { STORE_ERRORS } from './StoreProvider.constants';
+import { FileType } from '../../pages/MyFiles/MyFiles.types';
 import { auth } from '../AuthProvider/AuthProvider.helpers';
 
 export const db = getFirestore(firebaseApp);
@@ -45,8 +47,11 @@ export async function addMusicFile(props: StoredFile) {
   });
 }
 
-export async function getMusicFilesData({ ownerUid }: { ownerUid: string }) {
-  const q = query(collection(db, 'files'), where('ownerUid', '==', ownerUid));
+export async function getMusicFilesData({ ownerUid }: { ownerUid?: string }) {
+  const q = query(
+    collection(db, 'files'),
+    where('ownerUid', '==', ownerUid ?? auth.currentUser?.uid),
+  );
 
   const querySnapshot = await getDocs(q);
   const data: Array<FileMetadata> = [];
@@ -54,6 +59,7 @@ export async function getMusicFilesData({ ownerUid }: { ownerUid: string }) {
     // doc.data() is never undefined for query doc snapshots
     data.push({ name: doc.id, ...(doc.data() as Omit<FileMetadata, 'name'>) });
   });
+
   return data;
 }
 
@@ -76,6 +82,10 @@ export async function deleteMusicFile(props: { fileName: string; type: string })
     });
 }
 
-export async function getMusicFilesSrc() {
-  const fileMetadata = await getMusicFilesData({ ownerUid: auth.currentUser!.uid });
+export async function getMusicFileSrc(fileName: string, fileType: FileType) {
+  const fileReference = ref(storage, `${fileType}s/${fileName}`);
+
+  const url = await getDownloadURL(fileReference);
+
+  return url;
 }

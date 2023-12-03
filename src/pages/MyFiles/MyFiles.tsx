@@ -7,13 +7,14 @@ import { FileType, MusicTileDialogMode } from './MyFiles.types';
 import {
   addMusicFile,
   deleteMusicFile,
-  getMusicFilesData,
+  getMusicFileSrc,
 } from '../../providers/StoreProvider/StoreProvider.helpers';
 import { FileMetadata } from '../../providers/StoreProvider/StoreProvider.types';
 import useAuth from '../../hooks/useAuth/useAuth';
 import { useSnackbar } from '../../hooks/useSnackbar/useSnackbar';
 import {
   ADD_MUSIC_FILE_MESSAGES,
+  PLAY_MUSIC_MESSAGES,
   REMOVE_MUSIC_FILE_MESSAGES,
   SAMPLES_LIMIT,
   TRACKS_LIMIT,
@@ -23,6 +24,8 @@ import MusicTileList from './MusicTileList/MusicTileList';
 import { isUploadedFilesLimitExceeded } from './MyFiles.helpers';
 import MusicTileDialog from './MusicTileDialog/MusicTileDialog';
 import { UIContext } from '../../providers/UIProvider/UIProvider';
+import { StorageError } from '@firebase/storage';
+import { StoreContext } from '../../providers/StoreProvider/StoreProvider';
 
 export default function MyFiles() {
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
@@ -30,13 +33,14 @@ export default function MyFiles() {
   const [selectedFileType, setSelectedFileType] = useState<FileType>('track');
   const [musicTileDialogMode, setMusicTileDialogMode] = useState<MusicTileDialogMode>(null);
   const [uploadFileType, setUploadFileType] = useState<FileType>('track');
-  const [musicFilesData, setMusicFilesData] = useState<Array<FileMetadata>>([]);
   const { userInfo } = useAuth();
   const { showSnackbar } = useSnackbar();
-  const { setSrc } = useContext(UIContext);
+  const { setSrc, audioPlayer, togglePlay, toggleAudioPlayer } = useContext(UIContext);
+  const { isMusicFilesMetadataLoaded, musicFilesMetadata, fetchMusicFilesMetadata } =
+    useContext(StoreContext);
 
-  const sampleFilesData = musicFilesData.filter(fileData => fileData.type === 'sample');
-  const trackFilesData = musicFilesData.filter(fileData => fileData.type === 'track');
+  const sampleFilesData = musicFilesMetadata.filter(fileData => fileData.type === 'sample');
+  const trackFilesData = musicFilesMetadata.filter(fileData => fileData.type === 'track');
 
   function handleFileUpload(file: File) {
     const fileMetadata: FileMetadata = {
@@ -50,13 +54,7 @@ export default function MyFiles() {
     addMusicFile({ file, metadata: fileMetadata })
       .then(() => {
         showSnackbar({ message: ADD_MUSIC_FILE_MESSAGES.SUCCESS, status: 'success' });
-        getMusicFilesData({ ownerUid: userInfo!.uid })
-          .then(data => {
-            setMusicFilesData(data);
-          })
-          .catch(error => {
-            console.log(error);
-          });
+        fetchMusicFilesMetadata();
       })
 
       .catch((error: Error) => {
@@ -83,42 +81,64 @@ export default function MyFiles() {
   }
 
   function handleMusicTileDialogRemove(type: FileType) {
+    if (audioPlayer.fileName === selectedFileName && audioPlayer.isShown) {
+      toggleAudioPlayer();
+      setSrc('', '');
+    }
     deleteMusicFile({ fileName: selectedFileName, type })
       .then(() => {
         setTimeout(() => {
-          getMusicFilesData({ ownerUid: userInfo!.uid })
-            .then(data => {
-              console.log('set with data', data);
-              setMusicFilesData(data);
-            })
-            .catch(error => {
-              showSnackbar({
-                message: `${REMOVE_MUSIC_FILE_MESSAGES.FAILURE} ${error}`,
-                status: 'error',
-              });
-            });
+          fetchMusicFilesMetadata();
 
           showSnackbar({ message: REMOVE_MUSIC_FILE_MESSAGES.SUCCESS, status: 'success' });
         }, 1000);
       })
-      .catch(error => {
+      .catch((error: StorageError) => {
         showSnackbar({
-          message: `${REMOVE_MUSIC_FILE_MESSAGES.FAILURE} ${error}`,
+          message: `${REMOVE_MUSIC_FILE_MESSAGES.FAILURE} ${error.message}`,
           status: 'error',
         });
       });
     setMusicTileDialogMode(null);
   }
 
-  useEffect(() => {
-    const func = async () => {
-      setMusicFilesData(await getMusicFilesData({ ownerUid: userInfo!.uid }));
-    };
+  function handleMusicTilePlay(fileName: string, fileType: FileType) {
+    if (audioPlayer.fileName !== fileName) {
+      getMusicFileSrc(fileName, fileType)
+        .then(url => {
+          setSrc(url, fileName);
+          if (!audioPlayer.isShown) {
+            toggleAudioPlayer();
+          }
 
-    func().catch(error => {
-      console.log(error);
-    });
-  }, [userInfo]);
+          setTimeout(togglePlay, 200);
+        })
+        .catch((error: Error) => {
+          showSnackbar({
+            message: `${PLAY_MUSIC_MESSAGES.FAILURE} ${error.message}`,
+            status: 'error',
+          });
+        });
+    } else {
+      togglePlay();
+    }
+  }
+
+  // function handleNextClick() {
+  //   const currentMusicFileIndex = musicFilesData.findIndex(
+  //     fileData => fileData.name === audioPlayer.fileName,
+  //   );
+  //   let nextMusicFileIndex;
+  //   if (currentMusicFileIndex + 1 === musicFilesData.length) nextMusicFileIndex = 0;
+  //   else nextMusicFileIndex = currentMusicFileIndex + 1;
+
+  //   console.log(audioPlayer.fileName);
+  // }
+  // function handlePreviousClick() {}
+
+  useEffect(() => {
+    fetchMusicFilesMetadata();
+  }, [userInfo, fetchMusicFilesMetadata]);
 
   return (
     <Box margin={2} display="flex" flexDirection="column" gap={2}>
@@ -153,17 +173,15 @@ export default function MyFiles() {
                 {sampleFilesData.length}/{SAMPLES_LIMIT}
               </Typography>
             </Box>
-
-            {sampleFilesData.length === 0 && <EmptyView description="There are no files yet!" />}
-            {sampleFilesData.length > 0 && (
-              <MusicTileList
-                onRemove={(fileName: string) => {
-                  handleMusicTileDialogToggle('remove', fileName, 'sample');
-                }}
-                fileType="sample"
-                musicFilesData={sampleFilesData}
-              />
-            )}
+            <MusicTileList
+              onPlay={handleMusicTilePlay}
+              onRemove={(fileName: string) => {
+                handleMusicTileDialogToggle('remove', fileName, 'sample');
+              }}
+              fileType="sample"
+              musicFilesData={sampleFilesData}
+              isLoaded={isMusicFilesMetadataLoaded}
+            />
 
             <Box display="flex" justifyContent="flex-end">
               <Button
@@ -194,16 +212,15 @@ export default function MyFiles() {
                 {trackFilesData.length}/{TRACKS_LIMIT}
               </Typography>
             </Box>
-            {trackFilesData.length === 0 && <EmptyView description="There are no files yet!" />}
-            {trackFilesData.length > 0 && (
-              <MusicTileList
-                onRemove={(fileName: string) => {
-                  handleMusicTileDialogToggle('remove', fileName, 'track');
-                }}
-                fileType="track"
-                musicFilesData={trackFilesData}
-              />
-            )}
+            <MusicTileList
+              onRemove={(fileName: string) => {
+                handleMusicTileDialogToggle('remove', fileName, 'track');
+              }}
+              onPlay={handleMusicTilePlay}
+              fileType="track"
+              musicFilesData={trackFilesData}
+              isLoaded={isMusicFilesMetadataLoaded}
+            />
             <Box display="flex" justifyContent="flex-end">
               <Button
                 variant="contained"

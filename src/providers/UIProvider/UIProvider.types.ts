@@ -1,10 +1,5 @@
 import { SNACKBAR_STATUS } from '../../hooks/useSnackbar/useSnackbar.constants';
 
-export type SrcType = {
-  samples: Array<string>;
-  tracks: Array<string>;
-};
-
 export type SnackbarType = {
   isShown: boolean;
   message: string | undefined;
@@ -12,7 +7,8 @@ export type SnackbarType = {
 };
 
 export type AudioPlayerType = {
-  src: SrcType;
+  src: string;
+  fileName: string;
   isPlaying: boolean;
   isShown: boolean;
 };
@@ -28,6 +24,6 @@ export type UIContextType = {
   toggleDrawer: () => void;
   togglePlay: () => void;
   toggleAudioPlayer: () => void;
-  setSrc: (src: SrcType) => void;
+  setSrc: (src: string, fileName: string) => void;
   audioPlayer: AudioPlayerType;
 };
