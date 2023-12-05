@@ -1,76 +1,133 @@
 import { useEffect, useState } from 'react';
-import { EQUALIZER_BANDS } from './Equalizer/Equalizer.constants';
 import Equalizer from './Equalizer/Equalizer';
 import AudioTrack from './AudioTrack/AudioTrack';
-import { DEFAULT_WAVESURFER_OPTIONS } from './AudioEditor.constants';
-import { Box, IconButton } from '@mui/material';
-import { PlayArrow, Stop } from '@mui/icons-material';
-
-const audioContext = new AudioContext();
-const filters = EQUALIZER_BANDS.map(band => {
-  const filter = audioContext.createBiquadFilter();
-  filter.type = band <= 32 ? 'lowshelf' : band >= 16000 ? 'highshelf' : 'peaking';
-  filter.gain.value = 0;
-  filter.Q.value = 1; // resonance
-  filter.frequency.value = band; // the cut-off frequency
-  return filter;
-});
+import { DEFAULT_WAVESURFER_OPTIONS, audioContext } from './AudioEditor.constants';
+import { Box } from '@mui/material';
+import { EQUALIZER_BANDS } from './Equalizer/Equalizer.constants';
+import AudioTimeline from './AudioTimeline/AudioTimeline';
+import Controls from './Controls/Controls';
+import { TrackState } from './AudioEditor.types';
 
 export default function AudioEditor() {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [equalizer, setEqualizer] = useState(filters);
-  const [wavesurferOptions, setWavesurferOptions] = useState([DEFAULT_WAVESURFER_OPTIONS]);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [tracksState, setTracksState] = useState<Array<TrackState>>([
+    ...DEFAULT_WAVESURFER_OPTIONS.map(() => 'ready' as TrackState),
+  ]);
+  const [equalizer, setEqualizer] = useState([
+    ...DEFAULT_WAVESURFER_OPTIONS.map(() =>
+      EQUALIZER_BANDS.map(band => {
+        const filter = audioContext.createBiquadFilter();
+        filter.type = band <= 32 ? 'lowshelf' : band >= 16000 ? 'highshelf' : 'peaking';
+        filter.gain.value = 0;
+        filter.Q.value = 1; // resonance
+        filter.frequency.value = band; // the cut-off frequency
+        return filter;
+      }),
+    ),
+  ]);
+
+  const [tracks, setTracks] = useState([...DEFAULT_WAVESURFER_OPTIONS]);
+  const [selectedTrackId, setSelectedTrackId] = useState(0);
 
   function onFilterChange(newFilters: Array<BiquadFilterNode>) {
-    setEqualizer(newFilters);
+    setEqualizer(previousValue => {
+      const newEqualizer = [...previousValue];
+      newEqualizer[selectedTrackId] = newFilters;
+      return newEqualizer;
+    });
   }
 
-  // useEffect(() => {
-  //   const audios = [];
-  //   for (const audio of SAMPLE_AUDIOS) {
-  //     const newAudio = new Audio();
-  //     newAudio.src = audio;
+  function onTrackFinish(index: number) {
+    setTracksState(previousValue =>
+      previousValue.map((value, i) => (i === index ? 'finished' : value)),
+    );
+  }
 
-  //     newAudio.addEventListener(
-  //       'canplay',
-  //       () => {
-  //         // Create a MediaElementSourceNode from the audio element
-  //         const mediaNode = audioContext.createMediaElementSource(newAudio);
+  // TODO: Bug - when seeked twice to the same time, the tracks desync
+  // TODO: Bug - when seeked to the end, the tracks desync, connected to the currentTime being not up to date
+  function onTrackSeek(time: number) {
+    setCurrentTime(time);
+    setTracksState(previousValue => {
+      return previousValue.map(trackState => {
+        if (trackState === 'finished') {
+          return 'playing';
+        } else return trackState;
+      });
+    });
+  }
 
-  //         // Connect the filters and media node sequentially
-  //         const equalizer = filters.reduce((prev, curr) => {
-  //           //What does the connect function do here?
-  //           prev.connect(curr);
-  //           return curr;
-  //         }, mediaNode);
+  function onPlayToggle() {
+    if (!isPlaying) {
+      setTracksState(previousValue => {
+        return previousValue.map(trackState => {
+          if (trackState === 'ready' || trackState === 'paused') {
+            return 'playing';
+          } else return trackState;
+        });
+      });
+    } else {
+      setTracksState(previousValue => {
+        return previousValue.map(trackState => {
+          if (trackState === 'playing') {
+            return 'paused';
+          } else return trackState;
+        });
+      });
+    }
 
-  //         // Connect the filters to the audio output
-  //         equalizer.connect(audioContext.destination);
-  //       },
-  //       { once: true },
-  //     );
+    setIsPlaying(previousValue => !previousValue);
+    if (audioContext.state !== 'running') {
+      void audioContext.resume();
+    }
+  }
 
-  //     audios.push(newAudio);
-  //   }
-  // }, []);
+  function onSkipPrevious() {
+    onTrackSeek(0);
+  }
+
+  function onSkipNext() {
+    // TODO: skip to the end
+    onTrackSeek(1);
+  }
+
+  useEffect(() => {
+    if (tracksState.every(trackState => trackState === 'finished')) {
+      setIsPlaying(false);
+      setTracksState(previousValue => previousValue.map(() => 'ready'));
+      setCurrentTime(0);
+    }
+  }, [tracksState]);
 
   return (
     <Box height="100%">
-      <Box display="flex" flexDirection="column" gap={1}>
-        {wavesurferOptions.map((track, index) => (
-          <AudioTrack
-            key={index}
-            isPlaying={isPlaying}
-            options={track}
-            onFinish={() => setIsPlaying(false)}
-          />
-        ))}
+      <Controls
+        isPlaying={isPlaying}
+        onPlay={onPlayToggle}
+        onSkipNext={onSkipNext}
+        onSkipPrevious={onSkipPrevious}
+      />
+      <Box position="relative" sx={{ overflowX: 'scroll', overflowY: 'hidden' }}>
+        {
+          // TODO: add duration based on tracks
+        }
+        <AudioTimeline duration={238000} />
+        <Box display="flex" flexDirection="column" gap={1}>
+          {tracks.map((track, index) => (
+            <AudioTrack
+              key={`${track.url}_${index}`}
+              isPlaying={isPlaying && tracksState[index] === 'playing'}
+              options={track}
+              onFinish={() => onTrackFinish(index)}
+              onSeek={(time: number) => onTrackSeek(time)}
+              currentTime={currentTime}
+              filters={equalizer[index]}
+            />
+          ))}
+        </Box>
       </Box>
       <Box height="20%" display="flex" flexDirection="column">
-        <IconButton onClick={() => setIsPlaying(previousValue => !previousValue)}>
-          {isPlaying ? <Stop /> : <PlayArrow />}
-        </IconButton>
-        <Equalizer filters={filters} onFilterChange={onFilterChange} />
+        <Equalizer filters={equalizer[0]} onFilterChange={onFilterChange} />
       </Box>
     </Box>
   );

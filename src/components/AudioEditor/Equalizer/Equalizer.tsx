@@ -17,7 +17,7 @@ export default function Equalizer({
                 orientation="vertical"
                 min={-40}
                 max={40}
-                defaultValue={filter.gain.value}
+                value={filter.gain.value}
                 onChange={(_event: Event, newValue: number | Array<number>) => {
                   const newFilters = [...filters];
                   newFilters[key].gain.value = newValue as number;
