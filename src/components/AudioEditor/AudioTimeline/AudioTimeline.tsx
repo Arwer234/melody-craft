@@ -5,7 +5,7 @@ import { AudioTimelineProps } from './AudioTimeline.types';
 export default function AudioTimeline({ duration }: AudioTimelineProps) {
   const notchesCount = duration / TIMELINE_TILE_DURATION;
   return (
-    <Box position="absolute" height="100%">
+    <Box position="absolute" height="100%" zIndex={-1}>
       <Box display="flex" height="100%">
         {Array.from(Array(notchesCount).keys()).map((_, index) => (
           <Box

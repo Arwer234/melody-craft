@@ -57,6 +57,7 @@ export default function AudioEditor() {
     });
   }
 
+  // TODO: Add sync currentTime
   function onPlayToggle() {
     if (!isPlaying) {
       setTracksState(previousValue => {
@@ -91,6 +92,19 @@ export default function AudioEditor() {
     onTrackSeek(1);
   }
 
+  function onDragEnd(time: number, index: number) {
+    console.log(time);
+    setTracks(previousValue => {
+      const newTracks = [...previousValue];
+      newTracks[index] = { ...newTracks[index], startTime: time };
+      return newTracks;
+    });
+  }
+
+  function handlePlayTimeUpdate(time: number) {
+    setCurrentTime(time);
+  }
+
   useEffect(() => {
     if (tracksState.every(trackState => trackState === 'finished')) {
       setIsPlaying(false);
@@ -117,17 +131,22 @@ export default function AudioEditor() {
             <AudioTrack
               key={`${track.url}_${index}`}
               isPlaying={isPlaying && tracksState[index] === 'playing'}
+              isSelected={selectedTrackId === index}
               options={track}
               onFinish={() => onTrackFinish(index)}
               onSeek={(time: number) => onTrackSeek(time)}
               currentTime={currentTime}
               filters={equalizer[index]}
+              onDblClick={() => setSelectedTrackId(index)}
+              onDragEnd={(time: number) => onDragEnd(time, index)}
+              onPause={index === 0 ? (time: number) => handlePlayTimeUpdate(time) : undefined}
+              startTime={track.startTime}
             />
           ))}
         </Box>
       </Box>
       <Box height="20%" display="flex" flexDirection="column">
-        <Equalizer filters={equalizer[0]} onFilterChange={onFilterChange} />
+        <Equalizer filters={equalizer[selectedTrackId]} onFilterChange={onFilterChange} />
       </Box>
     </Box>
   );
