@@ -8,11 +8,18 @@ export default function Equalizer({
   onFilterChange: (newFilters: Array<BiquadFilterNode>) => void;
 }) {
   return (
-    <Paper sx={{ margin: 1 }}>
-      <Box margin={1} height={200} display="flex" gap={8} justifyContent="center">
+    <Paper>
+      <Box display="flex" gap={8} justifyContent="center" padding={2} flexWrap="wrap">
         {filters.map((filter, key) => {
           return (
-            <Box key={`${filter.type} ${key}`}>
+            <Box
+              key={`${filter.type} ${key}`}
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              gap={2}
+              height={120}
+            >
               <Slider
                 orientation="vertical"
                 min={-40}
@@ -25,7 +32,7 @@ export default function Equalizer({
                 }}
                 valueLabelDisplay="auto"
               />
-              <Typography variant="caption">{filter.frequency.value}</Typography>
+              <Typography variant="caption">{`${filter.type} (${filter.frequency.value})`}</Typography>
             </Box>
           );
         })}

@@ -2,7 +2,17 @@ import { useEffect, useState } from 'react';
 import Equalizer from './Equalizer/Equalizer';
 import AudioTrack from './AudioTrack/AudioTrack';
 import { DEFAULT_WAVESURFER_OPTIONS, audioContext } from './AudioEditor.constants';
-import { Box } from '@mui/material';
+import {
+  Box,
+  Grid,
+  Paper,
+  SpeedDial,
+  SpeedDialAction,
+  SpeedDialIcon,
+  Step,
+  StepLabel,
+  Stepper,
+} from '@mui/material';
 import { EQUALIZER_BANDS } from './Equalizer/Equalizer.constants';
 import AudioTimeline from './AudioTimeline/AudioTimeline';
 import Controls from './Controls/Controls';
@@ -28,7 +38,9 @@ export default function AudioEditor() {
   ]);
 
   const [tracks, setTracks] = useState([...DEFAULT_WAVESURFER_OPTIONS]);
+  const [volumes, setVolumes] = useState([...DEFAULT_WAVESURFER_OPTIONS.map(() => 50)]);
   const [selectedTrackId, setSelectedTrackId] = useState(0);
+  const [activeStep, setActiveStep] = useState(0);
 
   function onFilterChange(newFilters: Array<BiquadFilterNode>) {
     setEqualizer(previousValue => {
@@ -114,40 +126,75 @@ export default function AudioEditor() {
   }, [tracksState]);
 
   return (
-    <Box height="100%">
+    <Box
+      display="flex"
+      flexDirection="column"
+      justifyContent="space-between"
+      width="100%"
+      minHeight="100%"
+    >
+      <Box height="100%" display="flex" flexDirection="column" margin={2} gap={2}>
+        <Stepper activeStep={activeStep}>
+          <Step>
+            <StepLabel>Create a track</StepLabel>
+          </Step>
+          <Step>
+            <StepLabel>Select track settings</StepLabel>
+          </Step>
+          <Step>
+            <StepLabel>Publish</StepLabel>
+          </Step>
+        </Stepper>
+        <Box position="relative" sx={{ overflowX: 'scroll', overflowY: 'hidden', minHeight: 480 }}>
+          {
+            // TODO: add duration based on tracks
+          }
+          <AudioTimeline duration={238000} />
+          <Box display="flex" flexDirection="column" gap={1}>
+            {tracks.map((track, index) => (
+              <AudioTrack
+                key={`${track.url}_${index}`}
+                isPlaying={isPlaying && tracksState[index] === 'playing'}
+                isSelected={selectedTrackId === index}
+                options={track}
+                onFinish={() => onTrackFinish(index)}
+                onSeek={(time: number) => onTrackSeek(time)}
+                currentTime={currentTime}
+                filters={equalizer[index]}
+                volume={volumes[index]}
+                onDblClick={() => setSelectedTrackId(index)}
+                onDragEnd={(time: number) => onDragEnd(time, index)}
+                onPause={index === 0 ? (time: number) => handlePlayTimeUpdate(time) : undefined}
+                startTime={track.startTime}
+              />
+            ))}
+          </Box>
+        </Box>
+        <Grid container gap={2} width="100%">
+          <Grid item xs={8}>
+            <Equalizer filters={equalizer[selectedTrackId]} onFilterChange={onFilterChange} />
+          </Grid>
+          <Grid item xs>
+            <Paper
+              sx={{ display: 'flex', height: 192, alignItems: 'center', justifyContent: 'center' }}
+            >
+              asdf
+            </Paper>
+          </Grid>
+        </Grid>
+      </Box>
       <Controls
         isPlaying={isPlaying}
         onPlay={onPlayToggle}
         onSkipNext={onSkipNext}
         onSkipPrevious={onSkipPrevious}
+        onVolumeChange={(_event: Event, newValue: number | Array<number>) => {
+          const newVolumes = [...volumes];
+          newVolumes[selectedTrackId] = newValue as number;
+          setVolumes(newVolumes);
+        }}
+        volume={volumes[selectedTrackId]}
       />
-      <Box position="relative" sx={{ overflowX: 'scroll', overflowY: 'hidden' }}>
-        {
-          // TODO: add duration based on tracks
-        }
-        <AudioTimeline duration={238000} />
-        <Box display="flex" flexDirection="column" gap={1}>
-          {tracks.map((track, index) => (
-            <AudioTrack
-              key={`${track.url}_${index}`}
-              isPlaying={isPlaying && tracksState[index] === 'playing'}
-              isSelected={selectedTrackId === index}
-              options={track}
-              onFinish={() => onTrackFinish(index)}
-              onSeek={(time: number) => onTrackSeek(time)}
-              currentTime={currentTime}
-              filters={equalizer[index]}
-              onDblClick={() => setSelectedTrackId(index)}
-              onDragEnd={(time: number) => onDragEnd(time, index)}
-              onPause={index === 0 ? (time: number) => handlePlayTimeUpdate(time) : undefined}
-              startTime={track.startTime}
-            />
-          ))}
-        </Box>
-      </Box>
-      <Box height="20%" display="flex" flexDirection="column">
-        <Equalizer filters={equalizer[selectedTrackId]} onFilterChange={onFilterChange} />
-      </Box>
     </Box>
   );
 }

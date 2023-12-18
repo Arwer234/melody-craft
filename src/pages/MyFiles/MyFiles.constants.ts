@@ -13,6 +13,6 @@ export const PLAY_MUSIC_MESSAGES = {
   FAILURE: 'There was an error, try again!',
 };
 
-export const TRACKS_LIMIT = 3;
+export const TRACKS_LIMIT = 10;
 
-export const SAMPLES_LIMIT = 5;
+export const SAMPLES_LIMIT = 20;

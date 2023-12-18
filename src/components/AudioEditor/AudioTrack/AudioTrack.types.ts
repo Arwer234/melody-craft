@@ -12,4 +12,5 @@ export type AudioTrackProps = {
   filters: BiquadFilterNode[];
   isSelected?: boolean;
   startTime?: number;
+  volume: number;
 };

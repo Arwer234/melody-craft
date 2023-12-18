@@ -3,12 +3,13 @@ import useAuth from '../../hooks/useAuth/useAuth';
 import { signOutUser } from '../../providers/AuthProvider/AuthProvider.helpers';
 import { useNavigate } from 'react-router-dom';
 import { ROUTE_PATHS } from '../../routes';
-import { Menu } from '@mui/icons-material';
+import { Brightness4, Brightness7, Menu } from '@mui/icons-material';
 import { useContext } from 'react';
 import { UIContext } from '../../providers/UIProvider/UIProvider';
+import { NavigationBarProps } from './NavigationBar.types';
 
-export default function NavigationBar() {
-  const { isUserSignedIn, userInfo } = useAuth();
+export default function NavigationBar({ mode, onModeChange }: NavigationBarProps) {
+  const { isUserSignedIn } = useAuth();
   const { showSnackbar, toggleDrawer } = useContext(UIContext);
   const navigate = useNavigate();
 
@@ -44,18 +45,21 @@ export default function NavigationBar() {
           Melody Craft
         </Typography>
 
-        {isUserSignedIn && (
-          <Box display="flex" alignItems="center" gap={1}>
+        <Box display="flex" alignItems="center" gap={1}>
+          <IconButton onClick={onModeChange} color="inherit">
+            {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
+          </IconButton>
+          {isUserSignedIn && (
             <Button onClick={handleSignOutClick} color="inherit">
               Sign Out
             </Button>
-          </Box>
-        )}
-        {!isUserSignedIn && (
-          <Button onClick={handleSignInClick} color="inherit">
-            Sign In
-          </Button>
-        )}
+          )}
+          {!isUserSignedIn && (
+            <Button onClick={handleSignInClick} color="inherit">
+              Sign In
+            </Button>
+          )}
+        </Box>
       </Toolbar>
     </AppBar>
   );

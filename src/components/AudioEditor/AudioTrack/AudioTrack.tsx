@@ -16,6 +16,7 @@ export default function AudioTrack({
   onDragEnd,
   filters,
   isSelected,
+  volume,
 }: AudioTrackProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -99,6 +100,7 @@ export default function AudioTrack({
     return () => {
       if (wavesurferRef.current) {
         wavesurferRef.current.destroy();
+        wavesurferRef.current = null;
       }
       if (audioRef.current) {
         audioRef.current.removeEventListener('ended', onFinish);
@@ -112,6 +114,12 @@ export default function AudioTrack({
     };
   }, []);
 
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume / 100;
+    }
+  }, [volume]);
+
   // TODO: change color to match theme
   useEffect(() => {
     if (isSelected && wavesurferRef.current) {
@@ -124,9 +132,7 @@ export default function AudioTrack({
   useEffect(() => {
     const time = currentTime - startTime;
 
-    console.log(startTimeTimeoutRef.current);
-
-    if (startTimeTimeoutRef.current) {
+    if (startTimeTimeoutRef.current && isPlaying) {
       clearTimeout(startTimeTimeoutRef.current);
       startTimeTimeoutRef.current = setTimeout(() => {
         void audioRef.current?.play();
