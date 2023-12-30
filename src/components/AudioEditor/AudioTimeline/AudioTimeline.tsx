@@ -2,10 +2,11 @@ import { Box, Typography } from '@mui/material';
 import { TIMELINE_TILE_DURATION } from './AudioTimeline.constants';
 import { AudioTimelineProps } from './AudioTimeline.types';
 
-export default function AudioTimeline({ duration }: AudioTimelineProps) {
+export default function AudioTimeline({ duration, currentTime }: AudioTimelineProps) {
   const notchesCount = duration / TIMELINE_TILE_DURATION;
+  const caretPosition = (currentTime / duration) * 100;
   return (
-    <Box position="absolute" height="100%" zIndex={-1}>
+    <Box position="absolute" height="100%" zIndex={-1} left={80}>
       <Box display="flex" height="100%">
         {Array.from(Array(notchesCount).keys()).map((_, index) => (
           <Box
@@ -27,6 +28,17 @@ export default function AudioTimeline({ duration }: AudioTimelineProps) {
           </Box>
         ))}
       </Box>
+      <Box
+        position="absolute"
+        left={`${caretPosition}%`}
+        bottom={0}
+        height="100%"
+        width="2px"
+        bgcolor="primary.main"
+        sx={{
+          transition: 'left 0.1s ease-out',
+        }}
+      />
     </Box>
   );
 }

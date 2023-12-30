@@ -7,8 +7,9 @@ export type AudioTrackProps = {
   onSeek: (time: number) => void;
   onDblClick: () => void;
   onDragEnd: (time: number) => void;
-  onPause?: (time: number) => void;
-  currentTime: number;
+  onRemove: () => void;
+  onAdd: (time: number) => void;
+  seekTime: number | null;
   filters: BiquadFilterNode[];
   isSelected?: boolean;
   startTime?: number;
