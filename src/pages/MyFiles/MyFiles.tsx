@@ -1,7 +1,6 @@
 import { CloudUpload } from '@mui/icons-material';
 import { Box, Button, Paper, Typography } from '@mui/material';
-import EmptyView from '../../components/EmptyView/EmptyView';
-import { useEffect, useState, useContext } from 'react';
+import { useState, useContext } from 'react';
 import FileDialog from './FileDialog/FileDialog';
 import { FileType, MusicTileDialogMode } from './MyFiles.types';
 import {
@@ -36,7 +35,7 @@ export default function MyFiles() {
   const { userInfo } = useAuth();
   const { showSnackbar } = useSnackbar();
   const { setSrc, audioPlayer, togglePlay, toggleAudioPlayer } = useContext(UIContext);
-  const { isMusicFilesMetadataLoaded, musicFilesMetadata, fetchMusicFilesMetadata } =
+  const { isMusicFilesMetadataLoaded, musicFilesMetadata, refetchMusicFilesMetadata } =
     useContext(StoreContext);
 
   const sampleFilesData = musicFilesMetadata.filter(fileData => fileData.type === 'sample');
@@ -54,7 +53,7 @@ export default function MyFiles() {
     addMusicFile({ file, metadata: fileMetadata })
       .then(() => {
         showSnackbar({ message: ADD_MUSIC_FILE_MESSAGES.SUCCESS, status: 'success' });
-        fetchMusicFilesMetadata();
+        refetchMusicFilesMetadata();
       })
 
       .catch((error: Error) => {
@@ -88,7 +87,7 @@ export default function MyFiles() {
     deleteMusicFile({ fileName: selectedFileName, type })
       .then(() => {
         setTimeout(() => {
-          fetchMusicFilesMetadata();
+          refetchMusicFilesMetadata();
 
           showSnackbar({ message: REMOVE_MUSIC_FILE_MESSAGES.SUCCESS, status: 'success' });
         }, 1000);
@@ -135,10 +134,6 @@ export default function MyFiles() {
   //   console.log(audioPlayer.fileName);
   // }
   // function handlePreviousClick() {}
-
-  useEffect(() => {
-    fetchMusicFilesMetadata();
-  }, [userInfo, fetchMusicFilesMetadata]);
 
   return (
     <Box margin={2} display="flex" flexDirection="column" gap={2}>

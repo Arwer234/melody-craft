@@ -12,15 +12,20 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <AuthProvider>
-      <StoreProvider>
-        <UIProvider>
-          <RouterProvider router={router} fallbackElement={<Spinner />} />
-        </UIProvider>
-      </StoreProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <StoreProvider>
+          <UIProvider>
+            <RouterProvider router={router} fallbackElement={<Spinner />} />
+          </UIProvider>
+        </StoreProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   </React.StrictMode>,
 );

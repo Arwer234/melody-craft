@@ -1,13 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import Equalizer from './Equalizer/Equalizer';
 import AudioTrack from './AudioTrack/AudioTrack';
 import { DEFAULT_WAVESURFER_OPTIONS, audioContext } from './AudioEditor.constants';
-import { Box, Grid, IconButton, Paper, Step, StepLabel, Stepper } from '@mui/material';
+import { Box, Grid, IconButton, Step, StepLabel, Stepper } from '@mui/material';
 import { EQUALIZER_BANDS } from './Equalizer/Equalizer.constants';
 import AudioTimeline from './AudioTimeline/AudioTimeline';
-import Controls from './Controls/Controls';
+import Controls from '../Controls/Controls';
 import { Sample } from './AudioEditor.types';
 import { VolumeOff, VolumeOffOutlined } from '@mui/icons-material';
+import { SamplePicker } from './SamplePicker/SamplePicker';
+import { StoreContext } from '../../providers/StoreProvider/StoreProvider';
+import { FileType } from '../../pages/MyFiles/MyFiles.types';
 
 export default function AudioEditor() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -37,6 +40,8 @@ export default function AudioEditor() {
   const [selectedTrackId, setSelectedTrackId] = useState(DEFAULT_WAVESURFER_OPTIONS[0].id);
   const [activeStep, setActiveStep] = useState(0);
 
+  const { musicFilesMetadata, isMusicFilesMetadataLoaded } = useContext(StoreContext);
+
   const timeIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   function onFilterChange(newFilters: Array<BiquadFilterNode>) {
@@ -56,7 +61,6 @@ export default function AudioEditor() {
     });
   }
 
-  // TODO: Bug - when seeked twice to the same time, the tracks desync
   function onSampleSeek(time: number) {
     setSeekTime(time);
     setCurrentTime(time);
@@ -115,7 +119,7 @@ export default function AudioEditor() {
     onSampleSeek(1);
   }
 
-  function onDragEnd(time: number, lineIndex: number, sampleIndex: number) {
+  function onActiveSampleDragEnd(time: number, lineIndex: number, sampleIndex: number) {
     setPlaylines(previousValue => {
       const newTracks = [...previousValue];
       newTracks[lineIndex][sampleIndex].startTime = time;
@@ -171,6 +175,14 @@ export default function AudioEditor() {
     });
   }
 
+  function onSamplePickerItemDrag(
+    event: React.DragEvent<HTMLDivElement>,
+    fileName: string,
+    fileType: FileType,
+  ) {
+    console.log(event.currentTarget, fileName, fileType);
+  }
+
   useEffect(() => {
     if (playlines.every(line => line.every(sample => sample.state === 'finished'))) {
       setIsPlaying(false);
@@ -224,7 +236,12 @@ export default function AudioEditor() {
           <AudioTimeline currentTime={currentTime} duration={238000} />
           <Box display="flex" flexDirection="column" gap={1}>
             {playlines.map((samples, lineIndex) => (
-              <Box key={`playline_${lineIndex}`} display="flex" gap={4}>
+              <Box
+                key={`playline_${lineIndex}`}
+                display="flex"
+                gap={4}
+                onDragOver={(event: React.DragEvent<HTMLDivElement>) => event?.preventDefault()}
+              >
                 <Box display="flex">
                   <IconButton
                     onClick={() =>
@@ -264,7 +281,9 @@ export default function AudioEditor() {
                         filters={equalizers.find(item => item.id === sample.id)?.filters ?? []}
                         volume={volumes.find(item => item.id === sample.id)?.value ?? 100}
                         onDblClick={() => setSelectedTrackId(sample.id)}
-                        onDragEnd={(time: number) => onDragEnd(time, lineIndex, sampleIndex)}
+                        onDragEnd={(time: number) =>
+                          onActiveSampleDragEnd(time, lineIndex, sampleIndex)
+                        }
                         startTime={sample.startTime}
                         onRemove={() => onRemoveSample(lineIndex, sampleIndex)}
                         onAdd={(time: number) => onCopySample(time, sample.id)}
@@ -277,10 +296,17 @@ export default function AudioEditor() {
           </Box>
         </Box>
         <Grid container gap={2} width="100%">
-          <Grid item xs={12}>
+          <Grid item xs={8}>
             <Equalizer
               filters={equalizers.find(item => item.id === selectedTrackId)?.filters ?? []}
               onFilterChange={onFilterChange}
+            />
+          </Grid>
+          <Grid item xs>
+            <SamplePicker
+              musicFilesMetadata={musicFilesMetadata}
+              isMusicFilesMetadataLoaded={isMusicFilesMetadataLoaded}
+              onDrag={onSamplePickerItemDrag}
             />
           </Grid>
         </Grid>

@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Grid } from '@mui/material';
 import { MusicTileListProps } from './MusicTileList.types';
 import MusicTile from '../MusicTile/MusicTile';
 import EmptyView from '../../../components/EmptyView/EmptyView';
@@ -7,6 +7,8 @@ export default function MusicTileList({
   fileType,
   musicFilesData,
   isLoaded,
+  columns = 1,
+  onDrag,
   onRemove,
   onPlay,
 }: MusicTileListProps) {
@@ -14,15 +16,12 @@ export default function MusicTileList({
     return <EmptyView description="There are no files yet!" />;
   }
   return (
-    <Box display="flex" flexDirection="column" gap={2}>
+    <Grid container>
       {musicFilesData.map(musicFile => (
-        <MusicTile
-          onPlay={onPlay}
-          onRemove={onRemove}
-          key={`${fileType} ${musicFile.name}`}
-          {...musicFile}
-        />
+        <Grid key={`${fileType} ${musicFile.name}`} item xs={12 / columns}>
+          <MusicTile onPlay={onPlay} onRemove={onRemove} onDrag={onDrag} {...musicFile} />
+        </Grid>
       ))}
-    </Box>
+    </Grid>
   );
 }

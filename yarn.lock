@@ -1853,6 +1853,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/query-core@npm:5.15.5":
+  version: 5.15.5
+  resolution: "@tanstack/query-core@npm:5.15.5"
+  checksum: 3959515a4b6b8bd2b58d7239f875c4c772b3b7d99bf73c04b5b428404be8bc70fcc6306bf0f9680fceeea0a3eb6581e81e6227fc63740b12c527d5c03abecba0
+  languageName: node
+  linkType: hard
+
+"@tanstack/react-query@npm:^5.15.5":
+  version: 5.15.5
+  resolution: "@tanstack/react-query@npm:5.15.5"
+  dependencies:
+    "@tanstack/query-core": "npm:5.15.5"
+  peerDependencies:
+    react: ^18.0.0
+  checksum: ecc281dd718664ff02f3e42a6ed1bae73527bfee51ba8cdd68f89dd360443085329aa28323fd659b7f247671de4b5908e8f02fffaa53dfcc9c931e173374d9b9
+  languageName: node
+  linkType: hard
+
 "@tootallnate/once@npm:2":
   version: 2.0.0
   resolution: "@tootallnate/once@npm:2.0.0"
@@ -6852,6 +6870,7 @@ __metadata:
     "@fontsource/roboto": "npm:^5.0.8"
     "@mui/icons-material": "npm:^5.14.14"
     "@mui/material": "npm:^5.14.10"
+    "@tanstack/react-query": "npm:^5.15.5"
     "@trivago/prettier-plugin-sort-imports": "npm:^4.2.0"
     "@types/react": "npm:^18.2.15"
     "@types/react-dom": "npm:^18.2.7"

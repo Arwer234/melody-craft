@@ -15,6 +15,6 @@ export type FileMetadata = {
 
 export type StoreContextType = {
   musicFilesMetadata: Array<FileMetadata>;
-  fetchMusicFilesMetadata: () => void;
   isMusicFilesMetadataLoaded: boolean;
+  refetchMusicFilesMetadata: () => void;
 };
