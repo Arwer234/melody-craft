@@ -24,6 +24,7 @@ export default function AudioTrack({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
+  console.log(startTime);
 
   const theme = useTheme();
 
@@ -87,9 +88,11 @@ export default function AudioTrack({
 
   useEffect(() => {
     if (!audioRef.current) {
+      console.log('creating audio element', options.url, options.container);
       const audio = new Audio();
       audio.preload = 'metadata';
       audio.src = options.url!;
+      audio.crossOrigin = 'anonymous';
       audioRef.current = audio;
 
       audioRef.current.addEventListener(

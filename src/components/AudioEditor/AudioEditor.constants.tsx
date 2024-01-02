@@ -1,17 +1,17 @@
-import { Sample } from './AudioEditor.types';
+import { Sample, TrackState } from './AudioEditor.types';
 
 export const MAX_TRACK_AMOUNT = 8;
 
 export const DEFAULT_WAVESURFER_OPTIONS: Array<Sample> = [
   {
-    id: '1233321',
     container: 'waveform',
     waveColor: '#4F4A85',
     progressColor: '#383351',
     cursorColor: 'transparent',
-    url: 'test.mp3',
     autoplay: false,
+    url: 'test.mp3',
     startTime: 5.2,
+    id: '1233321',
     state: 'ready',
   },
   {
@@ -36,5 +36,13 @@ export const DEFAULT_WAVESURFER_OPTIONS: Array<Sample> = [
     state: 'ready',
   },
 ];
+
+export const DEFAULT_SAMPLE_OPTIONS = {
+  waveColor: '#4F4A85',
+  progressColor: '#383351',
+  cursorColor: 'transparent',
+  autoplay: false,
+  state: 'ready' as TrackState,
+};
 
 export const audioContext = new AudioContext();

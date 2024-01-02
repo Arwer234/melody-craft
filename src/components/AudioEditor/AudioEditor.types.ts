@@ -9,3 +9,8 @@ export type CustomTrackOptions = {
 };
 
 export type Sample = WaveSurferOptions & CustomTrackOptions;
+
+export type EqualizerType = {
+  id: string;
+  filters: Array<BiquadFilterNode>;
+};

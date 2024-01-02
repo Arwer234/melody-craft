@@ -89,3 +89,48 @@ export async function getMusicFileSrc(fileName: string, fileType: FileType) {
 
   return url;
 }
+
+export async function getTracks() {
+  const currentUserUid = auth.currentUser?.uid;
+  const q = query(collection(db, 'tracks'), where('ownerUid', '==', currentUserUid));
+
+  const querySnapshot = await getDocs(q);
+  const data: Array<{
+    id: string;
+    ownerUid: string;
+    name: string;
+    playlines: Array<
+      Array<{
+        name: string;
+        startTime: number;
+        src: string;
+        volume: number;
+        gain: Array<number>;
+        id: string;
+      }>
+    >;
+  }> = [];
+  querySnapshot.forEach(doc => {
+    const parsedDoc = { id: doc.id, ...doc.data() };
+    parsedDoc.playlines = parsedDoc.playlines.map((playline: any) => {
+      return [...Object.values(playline)];
+    });
+    data.push(parsedDoc);
+  });
+
+  data.forEach(track => {
+    track.playlines.forEach(playline => {
+      playline.forEach(sample => {
+        getMusicFileSrc(sample.name, 'sample')
+          .then(url => {
+            sample.src = url;
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      });
+    });
+  });
+
+  return data;
+}

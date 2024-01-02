@@ -7,6 +7,7 @@ export default function Equalizer({
   filters: Array<BiquadFilterNode>;
   onFilterChange: (newFilters: Array<BiquadFilterNode>) => void;
 }) {
+  console.log(filters);
   return (
     <Paper>
       <Box display="flex" gap={8} justifyContent="center" padding={2} flexWrap="wrap">
