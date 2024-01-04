@@ -23,6 +23,8 @@ import { firebaseApp } from '../../firebase';
 import { STORE_ERRORS } from './StoreProvider.constants';
 import { FileType } from '../../pages/MyFiles/MyFiles.types';
 import { auth } from '../AuthProvider/AuthProvider.helpers';
+import { EqualizerType, Sample, Volume } from '../../components/AudioEditor/AudioEditor.types';
+import { PUBLISH_VISIBILITY } from '../../pages/Publish/Publish.constants';
 
 export const db = getFirestore(firebaseApp);
 export const storage = getStorage(firebaseApp);
@@ -133,4 +135,42 @@ export async function getTracks() {
   });
 
   return data;
+}
+
+export async function setTrack({
+  name,
+  volumes,
+  playlines,
+  equalizers,
+  tags,
+  visibility,
+  description,
+}: {
+  name: string;
+  volumes: Array<Volume>;
+  playlines: Array<Array<Sample>>;
+  equalizers: Array<EqualizerType>;
+  tags: Array<string>;
+  visibility: keyof typeof PUBLISH_VISIBILITY;
+  description: string;
+}) {
+  const currentUserUid = auth.currentUser?.uid;
+  const trackRef = doc(db, 'tracks', name);
+  const databasePlaylines = playlines;
+
+  const trackDoc = await getDoc(trackRef);
+  if (trackDoc.exists()) {
+    throw new Error(STORE_ERRORS.TRACK_EXISTS);
+  }
+
+  await setDoc(trackRef, {
+    name,
+    ownerUid: currentUserUid,
+    playlines: databasePlaylines,
+    volumes,
+    equalizers,
+    tags,
+    visibility,
+    description,
+  });
 }

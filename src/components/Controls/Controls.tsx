@@ -2,7 +2,13 @@ import { Box, Button, IconButton, Paper, Typography } from '@mui/material';
 import { ControlsProps } from './Controls.types';
 import { PlayArrow, SkipNext, SkipPrevious, Stop } from '@mui/icons-material';
 
-export default function Controls({ isPlaying, onPlay, onSkipNext, onSkipPrevious }: ControlsProps) {
+export default function Controls({
+  isPlaying,
+  onPlay,
+  onSkipNext,
+  onSkipPrevious,
+  onNextClick,
+}: ControlsProps) {
   return (
     <Box width="100%">
       <Paper>
@@ -21,7 +27,9 @@ export default function Controls({ isPlaying, onPlay, onSkipNext, onSkipPrevious
               <SkipNext fontSize="inherit" />
             </IconButton>
           </Box>
-          <Button variant="contained">Next</Button>
+          <Button onClick={onNextClick} variant="contained">
+            Next
+          </Button>
         </Box>
       </Paper>
     </Box>

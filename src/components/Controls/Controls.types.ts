@@ -3,4 +3,5 @@ export type ControlsProps = {
   onPlay: () => void;
   onSkipPrevious: () => void;
   onSkipNext: () => void;
+  onNextClick: () => void;
 };

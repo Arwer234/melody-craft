@@ -35,7 +35,7 @@ export const DEFAULT_WAVESURFER_OPTIONS: Array<Sample> = [
     startTime: 0,
     state: 'ready',
   },
-];
+] as const;
 
 export const DEFAULT_SAMPLE_OPTIONS = {
   waveColor: '#4F4A85',
@@ -43,6 +43,12 @@ export const DEFAULT_SAMPLE_OPTIONS = {
   cursorColor: 'transparent',
   autoplay: false,
   state: 'ready' as TrackState,
-};
+} as const;
 
 export const audioContext = new AudioContext();
+
+export const ACTIVE_STEPS = {
+  CREATE: 0,
+  EDIT: 1,
+  PUBLISH: 2,
+} as const;
