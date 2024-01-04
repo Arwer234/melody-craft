@@ -21,12 +21,13 @@ import {
 } from '../../components/AudioEditor/AudioEditor.constants';
 import Publish from '../Publish/Publish';
 import { Add } from '@mui/icons-material';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { getTracks } from '../../providers/StoreProvider/StoreProvider.helpers';
+import { useQuery } from '@tanstack/react-query';
+import { getTracks, setTrack } from '../../providers/StoreProvider/StoreProvider.helpers';
 import { UIContext } from '../../providers/UIProvider/UIProvider';
 import { EqualizerType, Sample, Volume } from '../../components/AudioEditor/AudioEditor.types';
 import { EQUALIZER_BANDS } from '../../components/AudioEditor/Equalizer/Equalizer.constants';
 import { PublishFormValues } from '../Publish/Publish.types';
+import { TRACK_STORE_ERROR_TO_MESSAGE } from './Editor.constants';
 
 export default function Editor() {
   const [activeStep, setActiveStep] = useState<number>(ACTIVE_STEPS.CREATE);
@@ -40,7 +41,6 @@ export default function Editor() {
     queryKey: ['tracks'],
     queryFn: getTracks,
   });
-  const {} = useMutation({});
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
 
   const { showSnackbar } = useContext(UIContext);
@@ -96,7 +96,20 @@ export default function Editor() {
   }
 
   function handleSubmit(values: PublishFormValues) {
-    console.log('submitValues: ', values);
+    console.log('submitValues: ', { ...values, playlines, volumes, equalizers });
+    setTrack({ ...values, playlines, volumes, equalizers })
+      .then(result => {
+        showSnackbar({
+          message: result.message,
+          status: result.status,
+        });
+      })
+      .catch((error: Error) => {
+        showSnackbar({
+          message: TRACK_STORE_ERROR_TO_MESSAGE[error.message] ?? 'Something went wrong',
+          status: 'error',
+        });
+      });
   }
 
   return (

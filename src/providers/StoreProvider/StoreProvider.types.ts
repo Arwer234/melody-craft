@@ -18,3 +18,11 @@ export type StoreContextType = {
   isMusicFilesMetadataLoaded: boolean;
   refetchMusicFilesMetadata: () => void;
 };
+
+export type StoreSample = {
+  gain: Array<number>;
+  id: string;
+  name: string;
+  startTime: number;
+  volume: number;
+};

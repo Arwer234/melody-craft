@@ -9,7 +9,7 @@ import {
   setDoc,
   where,
 } from 'firebase/firestore';
-import { FileMetadata, StoredFile } from './StoreProvider.types';
+import { FileMetadata, StoreSample, StoredFile } from './StoreProvider.types';
 import {
   StorageError,
   StorageErrorCode,
@@ -25,6 +25,7 @@ import { FileType } from '../../pages/MyFiles/MyFiles.types';
 import { auth } from '../AuthProvider/AuthProvider.helpers';
 import { EqualizerType, Sample, Volume } from '../../components/AudioEditor/AudioEditor.types';
 import { PUBLISH_VISIBILITY } from '../../pages/Publish/Publish.constants';
+import { SNACKBAR_STATUS } from '../../hooks/useSnackbar/useSnackbar.constants';
 
 export const db = getFirestore(firebaseApp);
 export const storage = getStorage(firebaseApp);
@@ -153,24 +154,48 @@ export async function setTrack({
   tags: Array<string>;
   visibility: keyof typeof PUBLISH_VISIBILITY;
   description: string;
-}) {
+}): Promise<{ status: (typeof SNACKBAR_STATUS)[keyof typeof SNACKBAR_STATUS]; message: string }> {
   const currentUserUid = auth.currentUser?.uid;
-  const trackRef = doc(db, 'tracks', name);
-  const databasePlaylines = playlines;
+  const q = query(collection(db, 'tracks'), where('name', '==', name));
 
-  const trackDoc = await getDoc(trackRef);
-  if (trackDoc.exists()) {
-    throw new Error(STORE_ERRORS.TRACK_EXISTS);
+  const querySnapshot = await getDocs(q);
+
+  if (querySnapshot.docs.length > 0) {
+    return {
+      status: SNACKBAR_STATUS.ERROR,
+      message: STORE_ERRORS.TRACK_EXISTS,
+    };
   }
+
+  const trackRef = doc(db, 'tracks', name);
+
+  const parsedPlaylines = playlines.map(playline => {
+    const parsedPlayline: { [k: number]: StoreSample } = {};
+    playline.forEach((sample, index) => {
+      parsedPlayline[index] = {
+        name: sample.name,
+        startTime: sample.startTime ?? 0,
+        id: sample.id,
+        gain: equalizers
+          .find(equalizer => equalizer.id === sample.id)
+          ?.filters.map(filter => filter.gain.value) ?? [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        volume: volumes.find(volume => volume.id === sample.id)?.value ?? 100,
+      };
+    });
+    return parsedPlayline;
+  });
 
   await setDoc(trackRef, {
     name,
     ownerUid: currentUserUid,
-    playlines: databasePlaylines,
-    volumes,
-    equalizers,
+    playlines: parsedPlaylines,
     tags,
     visibility,
     description,
   });
+
+  return {
+    status: SNACKBAR_STATUS.SUCCESS,
+    message: 'Track successfully saved!',
+  };
 }

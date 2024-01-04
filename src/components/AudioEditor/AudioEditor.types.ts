@@ -7,6 +7,7 @@ export type CustomTrackOptions = {
   startTime?: number;
   state: TrackState;
   id: string;
+  name: string;
 };
 
 export type Sample = WaveSurferOptions & CustomTrackOptions;
