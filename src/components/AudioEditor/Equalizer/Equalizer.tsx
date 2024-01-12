@@ -1,4 +1,5 @@
-import { Box, Paper, Slider, Typography } from '@mui/material';
+import { Box, Paper, Slider, Tooltip, Typography } from '@mui/material';
+import { EQUALIZER_MARKS } from './Equalizer.constants';
 
 export default function Equalizer({
   filters,
@@ -7,10 +8,9 @@ export default function Equalizer({
   filters: Array<BiquadFilterNode>;
   onFilterChange: (newFilters: Array<BiquadFilterNode>) => void;
 }) {
-  console.log(filters);
   return (
     <Paper>
-      <Box display="flex" gap={8} justifyContent="center" padding={2} flexWrap="wrap">
+      <Box display="flex" gap={2} justifyContent="space-around" padding={2} flexWrap="wrap">
         {filters.map((filter, key) => {
           return (
             <Box
@@ -19,12 +19,13 @@ export default function Equalizer({
               flexDirection="column"
               alignItems="center"
               gap={2}
-              height={120}
+              height={140}
             >
               <Slider
                 orientation="vertical"
                 min={-40}
                 max={40}
+                marks={EQUALIZER_MARKS}
                 value={filter.gain.value}
                 onChange={(_event: Event, newValue: number | Array<number>) => {
                   const newFilters = [...filters];
@@ -33,7 +34,11 @@ export default function Equalizer({
                 }}
                 valueLabelDisplay="auto"
               />
-              <Typography variant="caption">{`${filter.type} (${filter.frequency.value})`}</Typography>
+              <Box pt={1}>
+                <Tooltip title="Frequency to be filtered">
+                  <Typography variant="caption">{`${filter.frequency.value} Hz`}</Typography>
+                </Tooltip>
+              </Box>
             </Box>
           );
         })}

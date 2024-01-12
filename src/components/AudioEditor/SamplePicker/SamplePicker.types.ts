@@ -4,5 +4,9 @@ import { FileMetadata } from '../../../providers/StoreProvider/StoreProvider.typ
 export type SamplePickerProps = {
   musicFilesMetadata: Array<FileMetadata>;
   isMusicFilesMetadataLoaded: boolean;
-  onDrag: (event: React.DragEvent<HTMLDivElement>, fileName: string, fileType: FileType) => void;
+  onDrag: (
+    event: React.DragEvent<HTMLDivElement>,
+    fileName: string,
+    fileType: FileType,
+  ) => Promise<void>;
 };

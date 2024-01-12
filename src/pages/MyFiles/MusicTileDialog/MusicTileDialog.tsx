@@ -1,11 +1,10 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, TextField } from '@mui/material';
-import { useState } from 'react';
+import { Box, Button, Dialog, DialogActions, DialogContent } from '@mui/material';
 import { MusicTileDialogMode } from '../MyFiles.types';
 
 type MusicTileDialog = {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void>;
   fileName: string;
   mode: MusicTileDialogMode;
 };
@@ -18,7 +17,7 @@ export default function MusicTileDialog({
   mode,
 }: MusicTileDialog) {
   function handleConfirmClick() {
-    if (mode === 'remove') onConfirm();
+    if (mode === 'remove') void onConfirm();
   }
 
   return (

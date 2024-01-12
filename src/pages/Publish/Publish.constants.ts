@@ -11,3 +11,8 @@ export const PUBLISH_VISIBILITY = {
   PUBLIC: 'public',
   PRIVATE: 'private',
 } as const;
+
+export const EXISTING_TRACK_OPTIONS = {
+  EDIT: 'edit',
+  CREATE: 'create',
+} as const;

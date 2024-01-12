@@ -2,7 +2,8 @@ import { createContext } from 'react';
 import React from 'react';
 import { StoreContextType } from './StoreProvider.types';
 import { getMusicFilesData } from './StoreProvider.helpers';
-import { useQuery, QueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+import { queryClient } from '../../main';
 
 export const StoreContext = createContext<StoreContextType>({
   musicFilesMetadata: [],
@@ -15,8 +16,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     queryKey: ['musicFilesMetadata'],
     queryFn: fetchMusicFilesMetadata,
   });
-
-  const queryClient = new QueryClient();
 
   function fetchMusicFilesMetadata() {
     return getMusicFilesData({});

@@ -16,7 +16,7 @@ export default function MusicTileList({
     return <EmptyView description="There are no files yet!" />;
   }
   return (
-    <Grid container>
+    <Grid container rowGap={2}>
       {musicFilesData.map(musicFile => (
         <Grid key={`${fileType} ${musicFile.name}`} item xs={12 / columns}>
           <MusicTile onPlay={onPlay} onRemove={onRemove} onDrag={onDrag} {...musicFile} />

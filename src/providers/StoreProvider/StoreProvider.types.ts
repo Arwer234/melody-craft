@@ -11,6 +11,7 @@ export type FileMetadata = {
   type: FileType;
   ownerUid: string;
   datetime: string;
+  url?: string;
 };
 
 export type StoreContextType = {

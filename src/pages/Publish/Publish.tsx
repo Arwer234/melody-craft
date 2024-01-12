@@ -14,28 +14,48 @@ import {
   Typography,
 } from '@mui/material';
 import { Field, Form, Formik } from 'formik';
-import { PUBLISH_VISIBILITY, TrackPublishSchema } from './Publish.constants';
+import {
+  EXISTING_TRACK_OPTIONS,
+  PUBLISH_VISIBILITY,
+  TrackPublishSchema,
+} from './Publish.constants';
 import { PublishFormValues, PublishProps } from './Publish.types';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ROUTE_PATHS } from '../../routes';
 
-export default function Publish({ onSubmit }: PublishProps) {
+export default function Publish({ onSubmit, isExisting, existingName }: PublishProps) {
   const [tags, setTags] = useState<Array<string>>([]);
+  const navigate = useNavigate();
 
-  function handleSubmit(values: PublishFormValues) {
-    onSubmit({ ...values, tags });
+  async function handleSubmit(
+    values: PublishFormValues,
+    setSubmitting: (isSubmitting: boolean) => void,
+  ) {
+    const response = await onSubmit({ ...values, tags });
+
+    if (response === 'error') {
+      setSubmitting(false);
+    } else {
+      navigate(ROUTE_PATHS.MY_FILES);
+    }
   }
 
   return (
     <Box margin={2} display="flex" flexDirection="column">
       <Box display="flex" alignItems="center" justifyContent="center">
-        <Paper sx={{ padding: 3, mt: '48px', height: ['100%', 600] }}>
+        <Paper sx={{ padding: 3, mt: '48px', height: ['100%', 700] }}>
           <Formik
-            onSubmit={handleSubmit}
+            onSubmit={(values, { setSubmitting }) => {
+              void handleSubmit(values, setSubmitting);
+              setSubmitting(false);
+            }}
             initialValues={{
-              name: '',
+              name: existingName ?? '',
               description: '',
               tags: [],
-              visibility: PUBLISH_VISIBILITY.PUBLIC as keyof typeof PUBLISH_VISIBILITY,
+              visibility: PUBLISH_VISIBILITY.PUBLIC,
+              mode: EXISTING_TRACK_OPTIONS.CREATE,
             }}
             validationSchema={TrackPublishSchema}
           >
@@ -155,6 +175,23 @@ export default function Publish({ onSubmit }: PublishProps) {
                         />
                       </Field>
                     </Box>
+                    {isExisting && (
+                      <Box mt={2}>
+                        <FormLabel id="existing-label">Mode</FormLabel>
+                        <Field component={RadioGroup} name="mode">
+                          <FormControlLabel
+                            value={EXISTING_TRACK_OPTIONS.CREATE}
+                            control={<Radio />}
+                            label="Create a new track"
+                          />
+                          <FormControlLabel
+                            value={EXISTING_TRACK_OPTIONS.EDIT}
+                            control={<Radio />}
+                            label="Edit existing track"
+                          />
+                        </Field>
+                      </Box>
+                    )}
                   </Box>
                   <Button type="submit" disabled={isSubmitting}>
                     Publish

@@ -1,15 +1,17 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import Equalizer from './Equalizer/Equalizer';
 import AudioTrack from './AudioTrack/AudioTrack';
-import { ACTIVE_STEPS, audioContext } from './AudioEditor.constants';
-import { Box, Grid, IconButton } from '@mui/material';
+import { ACTIVE_STEPS, DEFAULT_SAMPLE_OPTIONS, audioContext } from './AudioEditor.constants';
+import { Box, IconButton } from '@mui/material';
 import AudioTimeline from './AudioTimeline/AudioTimeline';
 import Controls from '../Controls/Controls';
 import { AudioEditorProps, Sample } from './AudioEditor.types';
 import { VolumeOff, VolumeOffOutlined } from '@mui/icons-material';
 import { SamplePicker } from './SamplePicker/SamplePicker';
 import { StoreContext } from '../../providers/StoreProvider/StoreProvider';
-import { FileType } from '../../pages/MyFiles/MyFiles.types';
+import { UIContext } from '../../providers/UIProvider/UIProvider';
+import { getMusicFileSrc } from '../../providers/StoreProvider/StoreProvider.helpers';
+import { getDefaultEqualizer } from './AudioEditor.helpers';
 
 export default function AudioEditor({
   setActiveStep,
@@ -25,19 +27,9 @@ export default function AudioEditor({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [seekTime, setSeekTime] = useState<number | null>(null);
-  // ...DEFAULT_WAVESURFER_OPTIONS.map(option => {
-  //   const filters = EQUALIZER_BANDS.map(band => {
-  //     const filter = audioContext.createBiquadFilter();
-  //     filter.type = band <= 32 ? 'lowshelf' : band >= 16000 ? 'highshelf' : 'peaking';
-  //     filter.gain.value = 0;
-  //     filter.Q.value = 1;
-  //     filter.frequency.value = band;
-  //     return filter;
-  //   });
-  //   return { id: option.id, filters };
-  // }),
 
   const { musicFilesMetadata, isMusicFilesMetadataLoaded } = useContext(StoreContext);
+  const { showSnackbar } = useContext(UIContext);
 
   const timeIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -156,28 +148,101 @@ export default function AudioEditor({
     setEqualizers(previousValue => {
       const newItem = {
         id: copiedSample.id,
-        filters: equalizers.find(item => item.id === id)?.filters ?? [],
+        filters: getDefaultEqualizer(),
       };
       const newEqualizers = [...previousValue, newItem];
 
       return newEqualizers;
     });
-  }
+    setVolumes(previousValue => {
+      const newItem = {
+        id: copiedSample.id,
+        value: volumes.find(item => item.id === id)?.value ?? 100,
+      };
+      const newVolumes = [...previousValue, newItem];
 
-  function onRemoveSample(lineIndex: number, sampleIndex: number) {
-    setPlaylines(previousValue => {
-      const newPlaylines = [...previousValue];
-      newPlaylines[lineIndex].splice(sampleIndex, 1);
-      return newPlaylines;
+      return newVolumes;
     });
   }
 
-  function onSamplePickerItemDrag(
-    event: React.DragEvent<HTMLDivElement>,
-    fileName: string,
-    fileType: FileType,
-  ) {
-    console.log(event.currentTarget, fileName, fileType);
+  function onRemoveSample(lineIndex: number, sampleIndex: number) {
+    const sampleId = playlines[lineIndex][sampleIndex].id;
+    setPlaylines(previousValue => {
+      const newPlaylines = [...previousValue];
+      newPlaylines[lineIndex].splice(sampleIndex, 1);
+      if (newPlaylines[lineIndex].length === 0) newPlaylines.splice(lineIndex, 1);
+      return newPlaylines;
+    });
+    setVolumes(previousValue => {
+      const newVolumes = [...previousValue];
+      const volumeIndex = newVolumes.findIndex(item => item.id === sampleId);
+      newVolumes.splice(volumeIndex, 1);
+      return newVolumes;
+    });
+    setEqualizers(previousValue => {
+      const newEqualizers = [...previousValue];
+      const equalizerIndex = newEqualizers.findIndex(item => item.id === sampleId);
+      newEqualizers.splice(equalizerIndex, 1);
+      return newEqualizers;
+    });
+    if (selectedTrackId === sampleId)
+      setSelectedTrackId(playlines.find(line => line.length > 0)?.[0].id ?? null);
+  }
+
+  async function onSamplePickerItemDrag(_event: React.DragEvent<HTMLDivElement>, fileName: string) {
+    if (playlines.some(line => line.some(sample => sample.name === fileName))) {
+      showSnackbar({
+        message: 'This sample is already added, try copying the existing one',
+        status: 'error',
+      });
+      return;
+    }
+
+    const file = musicFilesMetadata.find(item => item.name === fileName);
+    if (!file) return;
+    const fileSrc = await getMusicFileSrc(file.name, 'sample');
+
+    const newSample = {
+      ...DEFAULT_SAMPLE_OPTIONS,
+      id: `${file.name.split('.')[0]}_${Math.round(Math.random() * 100)}`,
+      name: file.name,
+      url: fileSrc,
+      container: `waveform_${file.name.split('.')[0]}_${Math.round(Math.random() * 100)}`,
+      state: 'ready',
+      startTime: 0,
+      volume: 100,
+    } as Sample;
+
+    setPlaylines(previousValue => {
+      const newPlaylines = [...previousValue];
+      const emptyLineIndex = newPlaylines.findIndex(line => line.length === 0);
+
+      if (emptyLineIndex === -1) {
+        newPlaylines.push([newSample]);
+        return newPlaylines;
+      }
+
+      newPlaylines[emptyLineIndex].push(newSample);
+      return newPlaylines;
+    });
+    setEqualizers(previousValue => {
+      const newItem = {
+        id: newSample.id,
+        filters: getDefaultEqualizer(),
+      };
+      const newEqualizers = [...previousValue, newItem];
+
+      return newEqualizers;
+    });
+    setVolumes(previousValue => {
+      const newItem = {
+        id: newSample.id,
+        value: 100,
+      };
+      const newVolumes = [...previousValue, newItem];
+
+      return newVolumes;
+    });
   }
 
   function handleNextClick() {
@@ -195,7 +260,7 @@ export default function AudioEditor({
       );
       setCurrentTime(0);
     }
-  }, [playlines]);
+  }, [playlines, setPlaylines]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -221,6 +286,7 @@ export default function AudioEditor({
         justifyContent="space-between"
         width="100%"
         minHeight="100%"
+        gap={2}
       >
         <Box height="100%" display="flex" flexDirection="column" gap={2}>
           <Box
@@ -292,21 +358,21 @@ export default function AudioEditor({
               ))}
             </Box>
           </Box>
-          <Grid container gap={2} width="100%">
-            <Grid item xs={8}>
+          <Box display="flex" flexDirection={['column', 'row']} gap={2}>
+            <Box flex={2}>
               <Equalizer
                 filters={equalizers.find(item => item.id === selectedTrackId)?.filters ?? []}
                 onFilterChange={onFilterChange}
               />
-            </Grid>
-            <Grid item xs>
+            </Box>
+            <Box flex={1}>
               <SamplePicker
                 musicFilesMetadata={musicFilesMetadata}
                 isMusicFilesMetadataLoaded={isMusicFilesMetadataLoaded}
                 onDrag={onSamplePickerItemDrag}
               />
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </Box>
         <Controls
           isPlaying={isPlaying}

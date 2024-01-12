@@ -5,4 +5,5 @@ export type MusicTileProps = Omit<FileMetadata, 'ownerUid'> & {
   onRemove?: (fileName: string) => void;
   onPlay?: (fileName: string, fileType: FileType) => void;
   onDrag?: (event: React.DragEvent<HTMLDivElement>, fileName: string, fileType: FileType) => void;
+  src?: string;
 };

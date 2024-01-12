@@ -18,12 +18,10 @@ import {
   SAMPLES_LIMIT,
   TRACKS_LIMIT,
 } from './MyFiles.constants';
-import { STORE_ERRORS } from '../../providers/StoreProvider/StoreProvider.constants';
 import MusicTileList from './MusicTileList/MusicTileList';
 import { isUploadedFilesLimitExceeded } from './MyFiles.helpers';
 import MusicTileDialog from './MusicTileDialog/MusicTileDialog';
 import { UIContext } from '../../providers/UIProvider/UIProvider';
-import { StorageError } from '@firebase/storage';
 import { StoreContext } from '../../providers/StoreProvider/StoreProvider';
 
 export default function MyFiles() {
@@ -35,13 +33,13 @@ export default function MyFiles() {
   const { userInfo } = useAuth();
   const { showSnackbar } = useSnackbar();
   const { setSrc, audioPlayer, togglePlay, toggleAudioPlayer } = useContext(UIContext);
-  const { isMusicFilesMetadataLoaded, musicFilesMetadata, refetchMusicFilesMetadata } =
-    useContext(StoreContext);
+  const {
+    isMusicFilesMetadataLoaded,
+    musicFilesMetadata: sampleFilesData,
+    refetchMusicFilesMetadata,
+  } = useContext(StoreContext);
 
-  const sampleFilesData = musicFilesMetadata.filter(fileData => fileData.type === 'sample');
-  const trackFilesData = musicFilesMetadata.filter(fileData => fileData.type === 'track');
-
-  function handleFileUpload(file: File) {
+  async function handleFileUpload(file: File) {
     const fileMetadata: FileMetadata = {
       type: uploadFileType,
       size: file.size,
@@ -50,17 +48,17 @@ export default function MyFiles() {
       datetime: new Date().toJSON(),
     };
 
-    addMusicFile({ file, metadata: fileMetadata })
-      .then(() => {
-        showSnackbar({ message: ADD_MUSIC_FILE_MESSAGES.SUCCESS, status: 'success' });
-        refetchMusicFilesMetadata();
-      })
+    const addResult = await addMusicFile({ file, metadata: fileMetadata });
 
-      .catch((error: Error) => {
-        if ((error.message = STORE_ERRORS.FILE_EXISTS))
-          showSnackbar({ message: ADD_MUSIC_FILE_MESSAGES.FILE_EXISTS, status: 'error' });
-        else showSnackbar({ message: ADD_MUSIC_FILE_MESSAGES.FAILURE, status: 'error' });
+    if (addResult.status === 'error') {
+      showSnackbar({
+        message: `${ADD_MUSIC_FILE_MESSAGES.FAILURE}`,
+        status: 'error',
       });
+    } else if (addResult.status === 'success') {
+      showSnackbar({ message: ADD_MUSIC_FILE_MESSAGES.SUCCESS, status: 'success' });
+      refetchMusicFilesMetadata();
+    }
   }
 
   function handleUploadDialogToggle(fileType?: FileType) {
@@ -79,25 +77,20 @@ export default function MyFiles() {
     setSelectedFileType(type);
   }
 
-  function handleMusicTileDialogRemove(type: FileType) {
+  async function handleMusicTileDialogRemove(type: FileType) {
     if (audioPlayer.fileName === selectedFileName && audioPlayer.isShown) {
       toggleAudioPlayer();
       setSrc('', '');
     }
-    deleteMusicFile({ fileName: selectedFileName, type })
-      .then(() => {
-        setTimeout(() => {
-          refetchMusicFilesMetadata();
+    const deleteResult = await deleteMusicFile({ fileName: selectedFileName, type });
 
-          showSnackbar({ message: REMOVE_MUSIC_FILE_MESSAGES.SUCCESS, status: 'success' });
-        }, 1000);
-      })
-      .catch((error: StorageError) => {
-        showSnackbar({
-          message: `${REMOVE_MUSIC_FILE_MESSAGES.FAILURE} ${error.message}`,
-          status: 'error',
-        });
-      });
+    if (deleteResult.status === 'error') {
+      showSnackbar({ message: REMOVE_MUSIC_FILE_MESSAGES.FAILURE, status: 'error' });
+    } else if (deleteResult.status === 'success') {
+      showSnackbar({ message: REMOVE_MUSIC_FILE_MESSAGES.SUCCESS, status: 'success' });
+      refetchMusicFilesMetadata();
+    }
+
     setMusicTileDialogMode(null);
   }
 
@@ -216,19 +209,6 @@ export default function MyFiles() {
               musicFilesData={trackFilesData}
               isLoaded={isMusicFilesMetadataLoaded}
             />
-            <Box display="flex" justifyContent="flex-end">
-              <Button
-                variant="contained"
-                startIcon={<CloudUpload />}
-                onClick={() => handleUploadDialogToggle('track')}
-                disabled={isUploadedFilesLimitExceeded({
-                  type: 'track',
-                  musicFilesData: trackFilesData,
-                })}
-              >
-                Upload
-              </Button>
-            </Box>
           </Box>
         </Paper>
       </Box>

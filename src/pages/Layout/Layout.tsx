@@ -15,14 +15,13 @@ import SideDrawer from '../../components/SideDrawer/SideDrawer';
 import useAuth from '../../hooks/useAuth/useAuth';
 import { UIContext } from '../../providers/UIProvider/UIProvider';
 import { useContext, useMemo, useState } from 'react';
-import BasicAudioPlayer from '../../components/AudioPlayer/AudioPlayer';
 
 const DRAWER_WIDTH = '256px';
 
 export function Layout() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
   const [mode, setMode] = useState<PaletteMode>(prefersDarkMode ? 'dark' : 'light');
-  const { snackbar, drawer, audioPlayer } = useContext(UIContext);
+  const { snackbar, drawer } = useContext(UIContext);
   const { isUserSignedIn } = useAuth();
 
   const theme = useMemo(
@@ -56,9 +55,6 @@ export function Layout() {
           }}
         >
           <Outlet />
-          {audioPlayer.isShown && (
-            <BasicAudioPlayer offset={isDrawerShown ? DRAWER_WIDTH : '0px'} />
-          )}
         </Box>
 
         {snackbar.isShown && (

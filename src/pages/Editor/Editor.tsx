@@ -28,6 +28,7 @@ import { EqualizerType, Sample, Volume } from '../../components/AudioEditor/Audi
 import { EQUALIZER_BANDS } from '../../components/AudioEditor/Equalizer/Equalizer.constants';
 import { PublishFormValues } from '../Publish/Publish.types';
 import { TRACK_STORE_ERROR_TO_MESSAGE } from './Editor.constants';
+import { SNACKBAR_STATUS } from '../../hooks/useSnackbar/useSnackbar.constants';
 
 export default function Editor() {
   const [activeStep, setActiveStep] = useState<number>(ACTIVE_STEPS.CREATE);
@@ -37,6 +38,7 @@ export default function Editor() {
   const [equalizers, setEqualizers] = useState<Array<EqualizerType>>([]);
   //    [DEFAULT_WAVESURFER_OPTIONS[0], DEFAULT_WAVESURFER_OPTIONS[2]],
   const [playlines, setPlaylines] = useState<Array<Array<Sample>>>([]);
+  console.log('playlines: ', playlines);
   const { data: userTracks } = useQuery({
     queryKey: ['tracks'],
     queryFn: getTracks,
@@ -95,21 +97,23 @@ export default function Editor() {
     }
   }
 
-  function handleSubmit(values: PublishFormValues) {
-    console.log('submitValues: ', { ...values, playlines, volumes, equalizers });
-    setTrack({ ...values, playlines, volumes, equalizers })
-      .then(result => {
-        showSnackbar({
-          message: result.message,
-          status: result.status,
-        });
-      })
-      .catch((error: Error) => {
-        showSnackbar({
-          message: TRACK_STORE_ERROR_TO_MESSAGE[error.message] ?? 'Something went wrong',
-          status: 'error',
-        });
+  async function handleSubmit(
+    values: PublishFormValues,
+  ): Promise<(typeof SNACKBAR_STATUS)[keyof typeof SNACKBAR_STATUS]> {
+    const response = await setTrack({ ...values, playlines, volumes, equalizers });
+    if (response.status === 'success') {
+      showSnackbar({
+        message: response.message,
+        status: response.status,
       });
+    } else if (response.status === 'error') {
+      showSnackbar({
+        message: TRACK_STORE_ERROR_TO_MESSAGE[response.message] ?? 'Something went wrong',
+        status: 'error',
+      });
+    }
+
+    return response.status;
   }
 
   return (
@@ -195,7 +199,13 @@ export default function Editor() {
           setSelectedTrackId={setSelectedTrackId}
         />
       )}
-      {activeStep === ACTIVE_STEPS.PUBLISH && <Publish onSubmit={handleSubmit} />}
+      {activeStep === ACTIVE_STEPS.PUBLISH && (
+        <Publish
+          onSubmit={handleSubmit}
+          isExisting={selectedExistingTrackId !== null}
+          existingName={userTracks?.find(track => track.id === selectedExistingTrackId)?.name}
+        />
+      )}
     </Box>
   );
 }

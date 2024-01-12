@@ -24,7 +24,6 @@ export default function AudioTrack({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
-  console.log(startTime);
 
   const theme = useTheme();
 
@@ -55,6 +54,9 @@ export default function AudioTrack({
       width: (audio.duration * TIMELINE_TILE_DURATION) / 10,
       waveColor: isSelected ? '#00b0ff' : '#ccc',
       progressColor: isSelected ? '#00b0ff' : '#ccc',
+      barWidth: 3,
+      barGap: 2,
+      barRadius: 2,
     });
 
     wavesurferRef.current?.on('dblclick', onDblClick);
@@ -88,7 +90,6 @@ export default function AudioTrack({
 
   useEffect(() => {
     if (!audioRef.current) {
-      console.log('creating audio element', options.url, options.container);
       const audio = new Audio();
       audio.preload = 'metadata';
       audio.src = options.url!;

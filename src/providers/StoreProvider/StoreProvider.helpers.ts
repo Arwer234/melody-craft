@@ -12,7 +12,6 @@ import {
 import { FileMetadata, StoreSample, StoredFile } from './StoreProvider.types';
 import {
   StorageError,
-  StorageErrorCode,
   deleteObject,
   getDownloadURL,
   getStorage,
@@ -24,7 +23,7 @@ import { STORE_ERRORS } from './StoreProvider.constants';
 import { FileType } from '../../pages/MyFiles/MyFiles.types';
 import { auth } from '../AuthProvider/AuthProvider.helpers';
 import { EqualizerType, Sample, Volume } from '../../components/AudioEditor/AudioEditor.types';
-import { PUBLISH_VISIBILITY } from '../../pages/Publish/Publish.constants';
+import { EXISTING_TRACK_OPTIONS, PUBLISH_VISIBILITY } from '../../pages/Publish/Publish.constants';
 import { SNACKBAR_STATUS } from '../../hooks/useSnackbar/useSnackbar.constants';
 
 export const db = getFirestore(firebaseApp);
@@ -38,16 +37,27 @@ export async function addMusicFile(props: StoredFile) {
     throw new Error(STORE_ERRORS.FILE_EXISTS);
   }
 
-  await setDoc(doc(db, 'files', props.metadata.name), {
+  const setDocPromise = setDoc(doc(db, 'files', props.metadata.name), {
     size: props.metadata.size,
     type: props.metadata.type,
     ownerUid: props.metadata.ownerUid,
     datetime: props.metadata.datetime,
-  }).then(() => {
-    uploadBytes(storageRef, props.file).catch((error: StorageError) => {
-      throw new StorageError(error.code as StorageErrorCode, error.message);
-    });
   });
+  const uploadBytesPromise = uploadBytes(storageRef, props.file);
+
+  return Promise.all([setDocPromise, uploadBytesPromise])
+    .then(() => {
+      return {
+        status: 'success',
+        message: 'File successfully uploaded',
+      };
+    })
+    .catch((error: StorageError) => {
+      return {
+        status: 'error',
+        message: error.message,
+      };
+    });
 }
 
 export async function getMusicFilesData({ ownerUid }: { ownerUid?: string }) {
@@ -74,14 +84,21 @@ export async function deleteMusicFile(props: { fileName: string; type: string })
     throw new Error(STORE_ERRORS.NO_FILE);
   }
 
-  deleteObject(fileRef)
+  const deleteObjectPromise = deleteObject(fileRef);
+  const deleteDocPromise = deleteDoc(doc(db, 'files', props.fileName));
+
+  return Promise.all([deleteObjectPromise, deleteDocPromise])
     .then(() => {
-      deleteDoc(doc(db, 'files', props.fileName)).catch((error: StorageError) => {
-        throw new StorageError(error.code as StorageErrorCode, error.message);
-      });
+      return {
+        status: 'success',
+        message: 'File successfully deleted',
+      };
     })
     .catch((error: StorageError) => {
-      throw new StorageError(error.code as StorageErrorCode, error.message);
+      return {
+        status: 'error',
+        message: error.message,
+      };
     });
 }
 
@@ -144,15 +161,17 @@ export async function setTrack({
   playlines,
   equalizers,
   tags,
+  mode,
   visibility,
   description,
 }: {
   name: string;
   volumes: Array<Volume>;
+  mode: (typeof EXISTING_TRACK_OPTIONS)[keyof typeof EXISTING_TRACK_OPTIONS];
   playlines: Array<Array<Sample>>;
   equalizers: Array<EqualizerType>;
   tags: Array<string>;
-  visibility: keyof typeof PUBLISH_VISIBILITY;
+  visibility: (typeof PUBLISH_VISIBILITY)[keyof typeof PUBLISH_VISIBILITY];
   description: string;
 }): Promise<{ status: (typeof SNACKBAR_STATUS)[keyof typeof SNACKBAR_STATUS]; message: string }> {
   const currentUserUid = auth.currentUser?.uid;
@@ -160,7 +179,7 @@ export async function setTrack({
 
   const querySnapshot = await getDocs(q);
 
-  if (querySnapshot.docs.length > 0) {
+  if (querySnapshot.docs.length > 0 && mode === EXISTING_TRACK_OPTIONS.CREATE) {
     return {
       status: SNACKBAR_STATUS.ERROR,
       message: STORE_ERRORS.TRACK_EXISTS,

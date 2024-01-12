@@ -12,13 +12,12 @@ export function SamplePicker({
     return <Spinner />;
   }
   return (
-    <Paper sx={{ padding: 2 }}>
+    <Paper sx={{ padding: 2, height: 172, overflowY: 'scroll' }}>
       <MusicTileList
         musicFilesData={musicFilesMetadata}
         fileType="sample"
         isLoaded={isMusicFilesMetadataLoaded}
         onDrag={onDrag}
-        columns={2}
       />
     </Paper>
   );

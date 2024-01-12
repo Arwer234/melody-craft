@@ -5,7 +5,7 @@ import { useState } from 'react';
 type FileDialog = {
   isOpen: boolean;
   onClose: () => void;
-  onUpload: (file: File) => void;
+  onUpload: (file: File) => Promise<void>;
 };
 
 export default function FileDialog({ isOpen, onClose, onUpload }: FileDialog) {
@@ -17,7 +17,7 @@ export default function FileDialog({ isOpen, onClose, onUpload }: FileDialog) {
 
   function handleUploadClick() {
     if (file) {
-      onUpload(file);
+      void onUpload(file);
     }
 
     onClose();
