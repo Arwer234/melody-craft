@@ -1,6 +1,8 @@
-export type DiscoverTileDto = {
-  image_path?: string;
-  name: string;
-  id: string;
-  author: string;
+import { TrackDto } from '../../../providers/StoreProvider/StoreProvider.types';
+
+export type DiscoverTileCustomProps = {
+  displayName: string | null;
+  image_path: string | null;
 };
+
+export type DiscoverTileProps = TrackDto & DiscoverTileCustomProps;

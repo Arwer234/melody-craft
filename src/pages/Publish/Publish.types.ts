@@ -9,9 +9,13 @@ export type PublishFormValues = {
   mode: (typeof EXISTING_TRACK_OPTIONS)[keyof typeof EXISTING_TRACK_OPTIONS];
 };
 
+export type SubmitCustomValues = {
+  file: File | null;
+};
+
 export type PublishProps = {
   onSubmit: (
-    values: PublishFormValues,
+    values: PublishFormValues & SubmitCustomValues,
   ) => Promise<(typeof SNACKBAR_STATUS)[keyof typeof SNACKBAR_STATUS]>;
   isExisting: boolean;
   existingName?: string;

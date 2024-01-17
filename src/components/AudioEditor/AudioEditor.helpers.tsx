@@ -1,10 +1,5 @@
-import { getTracks } from '../../providers/StoreProvider/StoreProvider.helpers';
 import { audioContext } from './AudioEditor.constants';
 import { EQUALIZER_BANDS } from './Equalizer/Equalizer.constants';
-
-export async function getCurrentUserTracks() {
-  await getTracks();
-}
 
 export function getDefaultEqualizer() {
   return EQUALIZER_BANDS.map(band => {

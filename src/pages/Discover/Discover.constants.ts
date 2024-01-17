@@ -1,6 +1,4 @@
-import { DiscoverTileDto } from './DiscoverTile/DiscoverTile.types';
-
-export const DISCOVER_DUMMY: Array<DiscoverTileDto> = [
+export const DISCOVER_DUMMY = [
   {
     author: 'a',
     id: 'a',
@@ -17,3 +15,5 @@ export const DISCOVER_DUMMY: Array<DiscoverTileDto> = [
     name: 'test',
   },
 ];
+
+export const DEBOUNCE_TIME = 300;

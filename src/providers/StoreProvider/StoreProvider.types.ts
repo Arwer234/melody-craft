@@ -1,4 +1,6 @@
+import { Timestamp } from 'firebase/firestore';
 import { FileType } from '../../pages/MyFiles/MyFiles.types';
+import { PUBLISH_VISIBILITY } from '../../pages/Publish/Publish.constants';
 
 export type StoredFile = {
   file: File;
@@ -26,4 +28,16 @@ export type StoreSample = {
   name: string;
   startTime: number;
   volume: number;
+};
+
+export type TrackDto = {
+  description: string;
+  name: string;
+  ownerUid: string;
+  playlines: Array<Array<StoreSample>>;
+  tags: Array<string>;
+  visibility: (typeof PUBLISH_VISIBILITY)[keyof typeof PUBLISH_VISIBILITY];
+  date: Timestamp;
+  image: string;
+  likes: number;
 };

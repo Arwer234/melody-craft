@@ -9,7 +9,7 @@ import {
 } from 'firebase/auth';
 import { AUTH_STATUSES } from './AuthProvider.constants';
 import { firebaseApp } from '../../firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../StoreProvider/StoreProvider.helpers';
 
 export const auth = getAuth(firebaseApp);
@@ -80,4 +80,11 @@ export async function signOutUser() {
     });
 
   return result;
+}
+
+export async function getUserDisplayName(ownerUid: string) {
+  const userDoc = await getDoc(doc(db, 'users', ownerUid));
+  const user = userDoc.data() as User;
+
+  return user?.displayName;
 }

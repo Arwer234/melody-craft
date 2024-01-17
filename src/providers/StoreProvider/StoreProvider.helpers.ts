@@ -1,4 +1,7 @@
 import {
+  DocumentData,
+  Query,
+  Timestamp,
   collection,
   deleteDoc,
   doc,
@@ -9,7 +12,7 @@ import {
   setDoc,
   where,
 } from 'firebase/firestore';
-import { FileMetadata, StoreSample, StoredFile } from './StoreProvider.types';
+import { FileMetadata, StoreSample, StoredFile, TrackDto } from './StoreProvider.types';
 import {
   StorageError,
   deleteObject,
@@ -21,7 +24,7 @@ import {
 import { firebaseApp } from '../../firebase';
 import { STORE_ERRORS } from './StoreProvider.constants';
 import { FileType } from '../../pages/MyFiles/MyFiles.types';
-import { auth } from '../AuthProvider/AuthProvider.helpers';
+import { auth, getUserDisplayName } from '../AuthProvider/AuthProvider.helpers';
 import { EqualizerType, Sample, Volume } from '../../components/AudioEditor/AudioEditor.types';
 import { EXISTING_TRACK_OPTIONS, PUBLISH_VISIBILITY } from '../../pages/Publish/Publish.constants';
 import { SNACKBAR_STATUS } from '../../hooks/useSnackbar/useSnackbar.constants';
@@ -110,7 +113,7 @@ export async function getMusicFileSrc(fileName: string, fileType: FileType) {
   return url;
 }
 
-export async function getTracks() {
+export async function getAudioEditorTracks() {
   const currentUserUid = auth.currentUser?.uid;
   const q = query(collection(db, 'tracks'), where('ownerUid', '==', currentUserUid));
 
@@ -155,9 +158,68 @@ export async function getTracks() {
   return data;
 }
 
+export async function getImagePath(fileName: string) {
+  const fileReference = ref(storage, `images/${fileName}`);
+
+  if (!fileReference) return null;
+
+  const url = await getDownloadURL(fileReference);
+
+  return url;
+}
+
+export async function getTracks({ tags, name }: Pick<TrackDto, 'tags' | 'name'>) {
+  const coll = collection(db, 'tracks');
+  let q: Query<DocumentData, DocumentData> | null = null;
+
+  if (tags.length > 0 && name) {
+    q = query(coll, where('tags', 'array-contains-any', tags), where('name', '==', name));
+  } else if (tags.length > 0) {
+    q = query(coll, where('tags', 'array-contains-any', tags));
+  } else if (name) {
+    q = query(coll, where('name', '==', name));
+  } else {
+    q = query(coll);
+  }
+
+  if (q === null) return;
+
+  const querySnapshot = await getDocs(q);
+  const data: Array<TrackDto> = [];
+  querySnapshot.forEach(doc => {
+    data.push({ name: doc.id, ...(doc.data() as Omit<TrackDto, 'name'>) });
+  });
+
+  const extendedData = await Promise.all(
+    data.map(async track => {
+      const displayName = await getUserDisplayName(track.ownerUid);
+      const image_path = track.image ? await getImagePath(track.image) : null;
+      const filledTrack = { ...track, displayName, image_path };
+      return filledTrack;
+    }),
+  );
+
+  return extendedData;
+}
+
+export async function getTags() {
+  const q = query(collection(db, 'tracks'));
+  const querySnapshot = await getDocs(q);
+  const data: Array<string> = [];
+  querySnapshot.forEach(doc => {
+    const tags = doc.get('tags') as Array<string>;
+    tags.forEach(tag => {
+      if (!data.includes(tag)) data.push(tag);
+    });
+  });
+
+  return data;
+}
+
 export async function setTrack({
   name,
   volumes,
+  file,
   playlines,
   equalizers,
   tags,
@@ -166,6 +228,7 @@ export async function setTrack({
   description,
 }: {
   name: string;
+  file: File | null;
   volumes: Array<Volume>;
   mode: (typeof EXISTING_TRACK_OPTIONS)[keyof typeof EXISTING_TRACK_OPTIONS];
   playlines: Array<Array<Sample>>;
@@ -211,7 +274,23 @@ export async function setTrack({
     tags,
     visibility,
     description,
+    date: Timestamp.fromDate(new Date()),
+    likes: 0,
+    image: file ? file.name : null,
   });
+
+  if (file) {
+    const storageRef = ref(storage, `images/${file.name}`);
+    try {
+      await getDownloadURL(storageRef);
+      return {
+        status: SNACKBAR_STATUS.ERROR,
+        message: STORE_ERRORS.FILE_EXISTS,
+      };
+    } catch {
+      await uploadBytes(storageRef, file);
+    }
+  }
 
   return {
     status: SNACKBAR_STATUS.SUCCESS,

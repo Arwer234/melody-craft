@@ -23,16 +23,20 @@ import { PublishFormValues, PublishProps } from './Publish.types';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTE_PATHS } from '../../routes';
+import FileDialog from '../MyFiles/FileDialog/FileDialog';
+import { ACCEPTED_FILE_TYPES } from '../MyFiles/FileDialog/FileDialog.constants';
 
 export default function Publish({ onSubmit, isExisting, existingName }: PublishProps) {
   const [tags, setTags] = useState<Array<string>>([]);
+  const [file, setFile] = useState<File | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   async function handleSubmit(
     values: PublishFormValues,
     setSubmitting: (isSubmitting: boolean) => void,
   ) {
-    const response = await onSubmit({ ...values, tags });
+    const response = await onSubmit({ ...values, tags, file });
 
     if (response === 'error') {
       setSubmitting(false);
@@ -45,6 +49,12 @@ export default function Publish({ onSubmit, isExisting, existingName }: PublishP
     <Box margin={2} display="flex" flexDirection="column">
       <Box display="flex" alignItems="center" justifyContent="center">
         <Paper sx={{ padding: 3, mt: '48px', height: ['100%', 700] }}>
+          <FileDialog
+            isOpen={isDialogOpen}
+            acceptedFileTypes={ACCEPTED_FILE_TYPES.IMAGE}
+            onClose={() => setIsDialogOpen(false)}
+            onUpload={file => setFile(file)}
+          />
           <Formik
             onSubmit={(values, { setSubmitting }) => {
               void handleSubmit(values, setSubmitting);
@@ -160,6 +170,15 @@ export default function Publish({ onSubmit, isExisting, existingName }: PublishP
                         </Fade>
                       ))}
                     </Stack>
+                    {
+                      // TODO: Add formik integration
+                    }
+                    <Box display="flex" gap={2} alignItems="center" mt={3}>
+                      <Typography variant="body2">
+                        {file?.name ?? 'No track image uploaded'}
+                      </Typography>
+                      <Button onClick={() => setIsDialogOpen(true)}>Upload file</Button>
+                    </Box>
                     <Box mt={3}>
                       <FormLabel id="visibility-label">Visibility</FormLabel>
                       <Field component={RadioGroup} name="visibility">

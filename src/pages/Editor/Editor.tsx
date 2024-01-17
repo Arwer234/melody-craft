@@ -22,11 +22,14 @@ import {
 import Publish from '../Publish/Publish';
 import { Add } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
-import { getTracks, setTrack } from '../../providers/StoreProvider/StoreProvider.helpers';
+import {
+  getAudioEditorTracks,
+  setTrack,
+} from '../../providers/StoreProvider/StoreProvider.helpers';
 import { UIContext } from '../../providers/UIProvider/UIProvider';
 import { EqualizerType, Sample, Volume } from '../../components/AudioEditor/AudioEditor.types';
 import { EQUALIZER_BANDS } from '../../components/AudioEditor/Equalizer/Equalizer.constants';
-import { PublishFormValues } from '../Publish/Publish.types';
+import { PublishFormValues, SubmitCustomValues } from '../Publish/Publish.types';
 import { TRACK_STORE_ERROR_TO_MESSAGE } from './Editor.constants';
 import { SNACKBAR_STATUS } from '../../hooks/useSnackbar/useSnackbar.constants';
 
@@ -36,12 +39,10 @@ export default function Editor() {
   const [selectedExistingTrackId, setSelectedExistingTrackId] = useState<string | null>(null);
   const [volumes, setVolumes] = useState<Array<Volume>>([]);
   const [equalizers, setEqualizers] = useState<Array<EqualizerType>>([]);
-  //    [DEFAULT_WAVESURFER_OPTIONS[0], DEFAULT_WAVESURFER_OPTIONS[2]],
   const [playlines, setPlaylines] = useState<Array<Array<Sample>>>([]);
-  console.log('playlines: ', playlines);
   const { data: userTracks } = useQuery({
     queryKey: ['tracks'],
-    queryFn: getTracks,
+    queryFn: getAudioEditorTracks,
   });
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
 
@@ -98,7 +99,7 @@ export default function Editor() {
   }
 
   async function handleSubmit(
-    values: PublishFormValues,
+    values: PublishFormValues & SubmitCustomValues,
   ): Promise<(typeof SNACKBAR_STATUS)[keyof typeof SNACKBAR_STATUS]> {
     const response = await setTrack({ ...values, playlines, volumes, equalizers });
     if (response.status === 'success') {
