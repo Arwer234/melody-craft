@@ -1,11 +1,16 @@
-import { Box, Skeleton, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { DEBOUNCE_TIME } from './Discover.constants';
-import DiscoverTile from './DiscoverTile/DiscoverTile';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import useDebounce from '../../hooks/useDebounce/useDebounce';
 import { useQuery } from '@tanstack/react-query';
-import { getTags, getTracks } from '../../providers/StoreProvider/StoreProvider.helpers';
-import { useState } from 'react';
+import {
+  getPlaylists,
+  getTags,
+  getTracks,
+} from '../../providers/StoreProvider/StoreProvider.helpers';
+import { useContext, useState } from 'react';
+import TrackList from '../../components/TrackList/TrackList';
+import { AuthContext } from '../../providers/AuthProvider/AuthProvider';
 
 export default function Discover() {
   const {
@@ -25,6 +30,13 @@ export default function Discover() {
     queryFn: async () => {
       return await getTags();
     },
+  });
+
+  const { userInfo } = useContext(AuthContext);
+
+  const { data: playlists } = useQuery({
+    queryKey: ['playlists', userInfo?.uid],
+    queryFn: async () => getPlaylists({ ownerUid: userInfo?.uid }),
   });
 
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -56,14 +68,7 @@ export default function Discover() {
         onTagClick={handleTagClick}
         selectedTags={selectedTags}
       />
-      {isLoading && <Skeleton variant="rectangular" height={288} />}
-      {!isLoading && (
-        <Box display="flex" gap={1} flexDirection="column">
-          {tracksByTags?.map(item =>
-            item.visibility === 'public' ? <DiscoverTile {...item} key={item.name} /> : null,
-          )}
-        </Box>
-      )}
+      <TrackList playlists={playlists ?? []} tracks={tracksByTags ?? []} isLoading={isLoading} />
     </Box>
   );
 }

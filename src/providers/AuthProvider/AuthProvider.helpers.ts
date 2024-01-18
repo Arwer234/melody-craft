@@ -9,8 +9,9 @@ import {
 } from 'firebase/auth';
 import { AUTH_STATUSES } from './AuthProvider.constants';
 import { firebaseApp } from '../../firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { Firestore, collection, doc, getDoc, getDocs, query, setDoc } from 'firebase/firestore';
 import { db } from '../StoreProvider/StoreProvider.helpers';
+import { FirestoreUser, FirestoreUserExtended } from './AuthProvider.types';
 
 export const auth = getAuth(firebaseApp);
 
@@ -87,4 +88,17 @@ export async function getUserDisplayName(ownerUid: string) {
   const user = userDoc.data() as User;
 
   return user?.displayName;
+}
+
+export async function getAllUsers() {
+  const col = collection(db, 'users');
+  const q = query(col);
+  const querySnapshot = await getDocs(q);
+
+  const users: Array<FirestoreUserExtended> = [];
+  querySnapshot.forEach(doc => {
+    users.push({ ...doc.data(), uid: doc.id } as FirestoreUserExtended);
+  });
+
+  return users;
 }

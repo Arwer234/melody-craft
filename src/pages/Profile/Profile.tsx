@@ -5,10 +5,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  MenuItem,
   Paper,
-  Select,
-  SelectChangeEvent,
   TextField,
   Typography,
 } from '@mui/material';
@@ -21,31 +18,30 @@ import {
   getTracks,
   setPlaylist,
 } from '../../providers/StoreProvider/StoreProvider.helpers';
-import MusicTileList from '../MyFiles/MusicTileList/MusicTileList';
 import { Add } from '@mui/icons-material';
-import React, { Fragment, useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 import { UIContext } from '../../providers/UIProvider/UIProvider';
 import { STORE_ERRORS } from '../../providers/StoreProvider/StoreProvider.constants';
 import { queryClient } from '../../main';
+import TrackList from '../../components/TrackList/TrackList';
+import PlaylistList from '../../components/PlaylistList/PlaylistList';
 
 export default function Profile() {
   const { userInfo } = useAuth();
   const location = useLocation();
   const [isPlaylistTitleDialogOpen, setIsPlaylistTitleDialogOpen] = useState(false);
-  const [isAddToPlaylistDialogOpen, setIsAddToPlaylistDialogOpen] = useState(false);
   const [playlistTitle, setPlaylistTitle] = useState('');
-  const [trackNameToAdd, setTrackNameToAdd] = useState<string | null>(null);
   const { showSnackbar } = useContext(UIContext);
 
   const queryParams = new URLSearchParams(location.search);
   const ownerUid = queryParams.get('id');
   const resolvedOwnerUid = ownerUid ?? (userInfo?.uid as string);
-  const isOwner = ownerUid === userInfo?.uid || !ownerUid;
+  const isOwnPage = ownerUid === userInfo?.uid || !ownerUid;
 
   const { data: fetchedDisplayName } = useQuery({
     queryKey: ['displayName', resolvedOwnerUid],
     queryFn: async () => getUserDisplayName(ownerUid ?? ''),
-    enabled: Boolean(ownerUid) && !isOwner,
+    enabled: Boolean(ownerUid) && !isOwnPage,
   });
 
   const { data: userTracks, isLoading: isUserTracksLoading } = useQuery({
@@ -54,12 +50,12 @@ export default function Profile() {
   });
 
   const { data: playlists } = useQuery({
-    queryKey: ['playlists', resolvedOwnerUid],
-    queryFn: async () => getPlaylists({ ownerUid: resolvedOwnerUid }),
+    queryKey: ['playlists'],
+    queryFn: async () => getPlaylists({ ownerUid: userInfo?.uid }),
   });
 
   const resolvedDisplayName = fetchedDisplayName ?? userInfo?.displayName;
-  const filteredTracks = isOwner
+  const filteredTracks = isOwnPage
     ? userTracks
     : userTracks?.filter(track => track.visibility === 'public');
 
@@ -77,29 +73,7 @@ export default function Profile() {
         showSnackbar({ message: 'Playlist with that name already exists!', status: result.status });
       }
     }
-    void queryClient.invalidateQueries({ queryKey: ['playlists', resolvedOwnerUid] });
-  }
-
-  function handleAddToPlaylistClick(trackName: string) {
-    if (playlists && playlists?.length > 0) {
-      setIsAddToPlaylistDialogOpen(true);
-      setTrackNameToAdd(trackName);
-    } else {
-      showSnackbar({ message: 'You have no playlists!', status: 'error' });
-    }
-  }
-
-  function handleAddToPlaylistConfirm() {
-    setIsAddToPlaylistDialogOpen(false);
-
-    const selectedPlaylist = playlists?.find(playlist => playlist.name === playlistTitle);
-    if (!trackNameToAdd || !selectedPlaylist) return;
-
-    void setPlaylist({
-      name: playlistTitle,
-      trackNames: [...selectedPlaylist.trackNames, trackNameToAdd],
-    });
-    void queryClient.invalidateQueries({ queryKey: ['playlists', resolvedOwnerUid] });
+    void queryClient.invalidateQueries({ queryKey: ['playlists'] });
   }
 
   return (
@@ -120,37 +94,17 @@ export default function Profile() {
           <Button onClick={() => void handleCreatePlaylistClick()}>Create</Button>
         </DialogActions>
       </Dialog>
-      <Dialog onClose={() => setIsAddToPlaylistDialogOpen(false)} open={isAddToPlaylistDialogOpen}>
-        <DialogTitle>Choose playlist</DialogTitle>
-        <DialogContent>
-          <Select
-            value={playlistTitle}
-            onChange={(event: SelectChangeEvent) => setPlaylistTitle(event.target.value)}
-            fullWidth
-          >
-            {playlists?.map(playlist => (
-              <MenuItem key={playlist.name} value={playlist.name}>
-                {playlist.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setIsAddToPlaylistDialogOpen(false)}>Cancel</Button>
-          <Button onClick={() => handleAddToPlaylistConfirm()}>Add</Button>
-        </DialogActions>
-      </Dialog>
       <Typography mb={2} variant="h4">
         Profile - {resolvedDisplayName}
       </Typography>
       <Box display="flex" flexDirection={['column', 'row']} gap={2}>
         <Paper sx={{ padding: 2, width: '100%', minHeight: 500 }}>
           <Typography variant="h5">Personal tracks</Typography>
-          <MusicTileList
-            isLoaded={!isUserTracksLoading}
-            fileType="track"
-            tracksData={filteredTracks}
-            onAdd={handleAddToPlaylistClick}
+          <TrackList
+            playlists={playlists ?? []}
+            tracks={filteredTracks ?? []}
+            isLoading={isUserTracksLoading}
+            ownerUid={ownerUid ?? undefined}
           />
         </Paper>
         <Paper sx={{ padding: 2, width: '100%', minHeight: 500 }}>
@@ -162,20 +116,9 @@ export default function Profile() {
             justifyContent="space-between"
           >
             <Typography variant="h5">Playlists</Typography>
-            <Box>
-              {playlists?.map(playlist => (
-                <Fragment key={playlist.name}>
-                  <Typography variant="h6">{playlist.name}</Typography>
-                  {playlist.tracks.map((track, key) => (
-                    <Typography ml={1} key={`${track.name} ${playlist.name} ${key}`}>
-                      {track.name}
-                    </Typography>
-                  ))}
-                </Fragment>
-              ))}
-            </Box>
+            <PlaylistList playlists={playlists ?? []} />
             <Box display="flex" justifyContent="flex-end">
-              {isOwner && (
+              {isOwnPage && (
                 <Button
                   onClick={() => setIsPlaylistTitleDialogOpen(true)}
                   variant="contained"

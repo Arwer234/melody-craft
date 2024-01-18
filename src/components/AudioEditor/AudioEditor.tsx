@@ -367,7 +367,7 @@ export default function AudioEditor({
             </Box>
             <Box flex={1}>
               <SamplePicker
-                musicFilesMetadata={musicFilesMetadata}
+                sampleData={musicFilesMetadata}
                 isMusicFilesMetadataLoaded={isMusicFilesMetadataLoaded}
                 onDrag={onSamplePickerItemDrag}
               />

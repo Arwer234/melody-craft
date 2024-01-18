@@ -39,7 +39,11 @@ export type TrackDto = {
   visibility: (typeof PUBLISH_VISIBILITY)[keyof typeof PUBLISH_VISIBILITY];
   date: Timestamp;
   image: string;
-  likes: number;
+};
+
+export type TrackExtendedDto = TrackDto & {
+  displayName: string | null;
+  image_path: string | null;
 };
 
 export type PlaylistDto = {

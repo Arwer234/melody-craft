@@ -7,6 +7,7 @@ import {
   addMusicFile,
   deleteMusicFile,
   getMusicFileSrc,
+  getPlaylists,
   getTracks,
 } from '../../providers/StoreProvider/StoreProvider.helpers';
 import { FileMetadata } from '../../providers/StoreProvider/StoreProvider.types';
@@ -25,6 +26,7 @@ import MusicTileDialog from './MusicTileDialog/MusicTileDialog';
 import { UIContext } from '../../providers/UIProvider/UIProvider';
 import { StoreContext } from '../../providers/StoreProvider/StoreProvider';
 import { useQuery } from '@tanstack/react-query';
+import TrackList from '../../components/TrackList/TrackList';
 
 export default function MyFiles() {
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
@@ -40,9 +42,14 @@ export default function MyFiles() {
     musicFilesMetadata: sampleFilesData,
     refetchMusicFilesMetadata,
   } = useContext(StoreContext);
-  const { data: trackFilesData } = useQuery({
-    queryKey: ['tracks'],
-    queryFn: async () => getTracks({ name: '', tags: [] }),
+  const { data: tracks, isLoading: isTracksLoading } = useQuery({
+    queryKey: ['tracks', userInfo?.uid],
+    queryFn: async () => getTracks({ ownerUid: userInfo?.uid }),
+  });
+
+  const { data: playlists } = useQuery({
+    queryKey: ['playlists'],
+    queryFn: async () => getPlaylists({ ownerUid: userInfo?.uid }),
   });
 
   async function handleFileUpload(file: File) {
@@ -197,17 +204,13 @@ export default function MyFiles() {
             <Box display="flex" justifyContent="space-between" alignItems="center">
               <Typography variant="h5">Tracks</Typography>
               <Typography>
-                {trackFilesData?.length}/{TRACKS_LIMIT}
+                {tracks?.length}/{TRACKS_LIMIT}
               </Typography>
             </Box>
-            <MusicTileList
-              onRemove={(fileName: string) => {
-                handleMusicTileDialogToggle('remove', fileName, 'track');
-              }}
-              onPlay={handleMusicTilePlay}
-              fileType="track"
-              tracksData={trackFilesData ?? []}
-              isLoaded={isMusicFilesMetadataLoaded}
+            <TrackList
+              tracks={tracks ?? []}
+              isLoading={isTracksLoading}
+              playlists={playlists ?? []}
             />
           </Box>
         </Paper>

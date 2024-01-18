@@ -26,17 +26,12 @@ export function SignIn() {
     navigate(ROUTE_PATHS.HOME);
   }
   return (
-    <Box
-      display="flex"
-      flexDirection={['row']}
-      justifyContent="center"
-      height="100%"
-      alignItems="center"
-    >
+    <Box display="flex" justifyContent="center" height="100%" alignItems="center">
       <Paper
         sx={{
           padding: 2,
           height: ['100%', 600],
+          width: ['100%', 400],
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',

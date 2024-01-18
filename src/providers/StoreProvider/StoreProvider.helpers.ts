@@ -18,6 +18,7 @@ import {
   StoreSample,
   StoredFile,
   TrackDto,
+  TrackExtendedDto,
 } from './StoreProvider.types';
 import {
   StorageError,
@@ -201,6 +202,8 @@ export async function getTracks({
     q = query(coll, where('tags', 'array-contains-any', tags));
   } else if (name) {
     q = query(coll, where('name', '==', name));
+  } else if (ownerUid && ownerUid.length > 0) {
+    q = query(coll, where('ownerUid', '==', ownerUid));
   } else {
     q = query(coll);
   }
@@ -213,7 +216,7 @@ export async function getTracks({
     data.push({ name: doc.id, ...(doc.data() as Omit<TrackDto, 'name'>) });
   });
 
-  const extendedData = await Promise.all(
+  const extendedData: Array<TrackExtendedDto> = await Promise.all(
     data.map(async track => {
       const displayName = await getUserDisplayName(track.ownerUid);
       const image_path = track.image ? await getImagePath(track.image) : null;
@@ -386,7 +389,6 @@ export async function getPlaylists({ name, ownerUid }: { name?: string; ownerUid
   querySnapshot.forEach(doc => {
     data.push(doc.data() as PlaylistDto);
   });
-  console.log('data: ', data);
 
   const extendedData = await Promise.all(
     data.map(async playlist => {

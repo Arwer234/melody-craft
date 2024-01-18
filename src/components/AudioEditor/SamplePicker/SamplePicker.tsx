@@ -4,7 +4,7 @@ import Spinner from '../../Spinner/Spinner';
 import MusicTileList from '../../../pages/MyFiles/MusicTileList/MusicTileList';
 
 export function SamplePicker({
-  musicFilesMetadata,
+  sampleData,
   isMusicFilesMetadataLoaded,
   onDrag,
 }: SamplePickerProps) {
@@ -14,7 +14,7 @@ export function SamplePicker({
   return (
     <Paper sx={{ padding: 2, height: 172, overflowY: 'scroll' }}>
       <MusicTileList
-        musicFilesData={musicFilesMetadata}
+        samplesData={sampleData}
         fileType="sample"
         isLoaded={isMusicFilesMetadataLoaded}
         onDrag={onDrag}
