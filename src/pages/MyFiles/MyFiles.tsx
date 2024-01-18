@@ -7,6 +7,7 @@ import {
   addMusicFile,
   deleteMusicFile,
   getMusicFileSrc,
+  getTracks,
 } from '../../providers/StoreProvider/StoreProvider.helpers';
 import { FileMetadata } from '../../providers/StoreProvider/StoreProvider.types';
 import useAuth from '../../hooks/useAuth/useAuth';
@@ -23,6 +24,7 @@ import { isUploadedFilesLimitExceeded } from './MyFiles.helpers';
 import MusicTileDialog from './MusicTileDialog/MusicTileDialog';
 import { UIContext } from '../../providers/UIProvider/UIProvider';
 import { StoreContext } from '../../providers/StoreProvider/StoreProvider';
+import { useQuery } from '@tanstack/react-query';
 
 export default function MyFiles() {
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
@@ -38,6 +40,10 @@ export default function MyFiles() {
     musicFilesMetadata: sampleFilesData,
     refetchMusicFilesMetadata,
   } = useContext(StoreContext);
+  const { data: trackFilesData } = useQuery({
+    queryKey: ['tracks'],
+    queryFn: async () => getTracks({ name: '', tags: [] }),
+  });
 
   async function handleFileUpload(file: File) {
     const fileMetadata: FileMetadata = {
@@ -167,7 +173,7 @@ export default function MyFiles() {
                 handleMusicTileDialogToggle('remove', fileName, 'sample');
               }}
               fileType="sample"
-              musicFilesData={sampleFilesData}
+              samplesData={sampleFilesData}
               isLoaded={isMusicFilesMetadataLoaded}
             />
 
@@ -187,17 +193,11 @@ export default function MyFiles() {
           </Box>
         </Paper>
         <Paper sx={{ width: '100%', height: '100%' }}>
-          <Box
-            margin={2}
-            minHeight={700}
-            display="flex"
-            flexDirection="column"
-            justifyContent="space-between"
-          >
+          <Box margin={2} minHeight={700} display="flex" flexDirection="column" gap={2}>
             <Box display="flex" justifyContent="space-between" alignItems="center">
               <Typography variant="h5">Tracks</Typography>
               <Typography>
-                {trackFilesData.length}/{TRACKS_LIMIT}
+                {trackFilesData?.length}/{TRACKS_LIMIT}
               </Typography>
             </Box>
             <MusicTileList
@@ -206,7 +206,7 @@ export default function MyFiles() {
               }}
               onPlay={handleMusicTilePlay}
               fileType="track"
-              musicFilesData={trackFilesData}
+              tracksData={trackFilesData ?? []}
               isLoaded={isMusicFilesMetadataLoaded}
             />
           </Box>

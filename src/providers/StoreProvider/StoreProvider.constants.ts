@@ -8,4 +8,5 @@ export const STORE_ERRORS = {
   TRACK_EXISTS: 'track-exists',
   NAME_TAKEN: 'name-taken',
   NO_FILE: 'no-file',
+  PLAYLIST_EXISTS: 'playlist-exists',
 };

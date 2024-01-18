@@ -1,6 +1,5 @@
 import { Paper, Box, Typography } from '@mui/material';
 import { DiscoverTileProps } from './DiscoverTile.types';
-import { ThumbUp } from '@mui/icons-material';
 import TagList from '../../../components/TagList/TagList';
 import { PLACEHOLDER_ALBUM_COVER_SRC } from './DiscoverTile.constants';
 
@@ -8,7 +7,6 @@ export default function DiscoverTile({
   displayName,
   name,
   image_path,
-  likes,
   date,
   tags,
 }: DiscoverTileProps) {
@@ -26,10 +24,6 @@ export default function DiscoverTile({
             <Typography>
               {displayName} - {name}
             </Typography>
-            <Box display="flex" alignItems="center" gap={1}>
-              <Typography>{likes}</Typography>
-              <ThumbUp color="primary" />
-            </Box>
           </Box>
         </Box>
 

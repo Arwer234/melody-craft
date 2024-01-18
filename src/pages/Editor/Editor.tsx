@@ -41,7 +41,7 @@ export default function Editor() {
   const [equalizers, setEqualizers] = useState<Array<EqualizerType>>([]);
   const [playlines, setPlaylines] = useState<Array<Array<Sample>>>([]);
   const { data: userTracks } = useQuery({
-    queryKey: ['tracks'],
+    queryKey: ['audioEditorTracks'],
     queryFn: getAudioEditorTracks,
   });
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);

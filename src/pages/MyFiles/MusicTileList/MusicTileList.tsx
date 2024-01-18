@@ -5,23 +5,38 @@ import EmptyView from '../../../components/EmptyView/EmptyView';
 
 export default function MusicTileList({
   fileType,
-  musicFilesData,
+  tracksData,
+  samplesData,
   isLoaded,
   columns = 1,
   onDrag,
   onRemove,
   onPlay,
+  onAdd,
 }: MusicTileListProps) {
   if (!isLoaded) {
     return <EmptyView description="There are no files yet!" />;
   }
   return (
     <Grid container rowGap={2}>
-      {musicFilesData.map(musicFile => (
-        <Grid key={`${fileType} ${musicFile.name}`} item xs={12 / columns}>
-          <MusicTile onPlay={onPlay} onRemove={onRemove} onDrag={onDrag} {...musicFile} />
-        </Grid>
-      ))}
+      {fileType === 'track' &&
+        tracksData?.map(track => (
+          <Grid key={`${fileType} ${track.name}`} item xs={12 / columns}>
+            <MusicTile
+              onPlay={onPlay}
+              onRemove={onRemove}
+              onDrag={onDrag}
+              track={track}
+              onAdd={onAdd}
+            />
+          </Grid>
+        ))}
+      {fileType === 'sample' &&
+        samplesData?.map(sample => (
+          <Grid key={`${fileType} ${sample.name}`} item xs={12 / columns}>
+            <MusicTile onPlay={onPlay} onRemove={onRemove} onDrag={onDrag} sample={sample} />
+          </Grid>
+        ))}
     </Grid>
   );
 }

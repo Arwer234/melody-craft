@@ -15,7 +15,7 @@ export default function Discover() {
     debouncedValue,
   } = useDebounce('', DEBOUNCE_TIME);
   const { data: tracks } = useQuery({
-    queryKey: ['discover'],
+    queryKey: ['tracks'],
     queryFn: async () => {
       return await getTracks({ name: '', tags: [] });
     },

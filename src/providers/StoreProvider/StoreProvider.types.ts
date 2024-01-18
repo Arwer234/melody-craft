@@ -41,3 +41,14 @@ export type TrackDto = {
   image: string;
   likes: number;
 };
+
+export type PlaylistDto = {
+  name: string;
+  ownerUid: string;
+  trackNames: Array<string>;
+  date: Timestamp;
+};
+
+export type PlaylistExtendedDto = PlaylistDto & {
+  tracks: Array<TrackDto>;
+};

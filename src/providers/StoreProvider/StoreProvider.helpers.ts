@@ -12,7 +12,13 @@ import {
   setDoc,
   where,
 } from 'firebase/firestore';
-import { FileMetadata, StoreSample, StoredFile, TrackDto } from './StoreProvider.types';
+import {
+  FileMetadata,
+  PlaylistDto,
+  StoreSample,
+  StoredFile,
+  TrackDto,
+} from './StoreProvider.types';
 import {
   StorageError,
   deleteObject,
@@ -168,13 +174,30 @@ export async function getImagePath(fileName: string) {
   return url;
 }
 
-export async function getTracks({ tags, name }: Pick<TrackDto, 'tags' | 'name'>) {
+export async function getTracks({
+  tags,
+  name,
+  ownerUid,
+}: {
+  tags?: Array<string>;
+  name?: string;
+  ownerUid?: string;
+}) {
   const coll = collection(db, 'tracks');
   let q: Query<DocumentData, DocumentData> | null = null;
 
-  if (tags.length > 0 && name) {
+  if (tags && tags.length > 0 && name && ownerUid && ownerUid.length > 0) {
+    q = query(
+      coll,
+      where('tags', 'array-contains-any', tags),
+      where('name', '==', name),
+      where('ownerUid', '==', ownerUid),
+    );
+  } else if (tags && tags.length > 0 && ownerUid && ownerUid.length > 0) {
+    q = query(coll, where('tags', 'array-contains-any', tags), where('ownerUid', '==', ownerUid));
+  } else if (tags && tags.length > 0 && name && name.length > 0) {
     q = query(coll, where('tags', 'array-contains-any', tags), where('name', '==', name));
-  } else if (tags.length > 0) {
+  } else if (tags && tags.length > 0) {
     q = query(coll, where('tags', 'array-contains-any', tags));
   } else if (name) {
     q = query(coll, where('name', '==', name));
@@ -200,6 +223,21 @@ export async function getTracks({ tags, name }: Pick<TrackDto, 'tags' | 'name'>)
   );
 
   return extendedData;
+}
+
+export async function getTrackByName({ name }: { name: string }) {
+  const docRef = doc(db, 'tracks', name);
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists()) {
+    const track = docSnap.data() as TrackDto;
+    const displayName = await getUserDisplayName(track.ownerUid);
+    const image_path = track.image ? await getImagePath(track.image) : null;
+    const filledTrack = { ...track, displayName, image_path };
+    return filledTrack;
+  } else {
+    return null;
+  }
 }
 
 export async function getTags() {
@@ -296,4 +334,75 @@ export async function setTrack({
     status: SNACKBAR_STATUS.SUCCESS,
     message: 'Track successfully saved!',
   };
+}
+
+export async function setPlaylist({ name, trackNames }: Pick<PlaylistDto, 'name' | 'trackNames'>) {
+  const currentUserUid = auth.currentUser?.uid;
+  const q = query(collection(db, 'playlists'), where('name', '==', name));
+
+  const querySnapshot = await getDocs(q);
+
+  const isPlaylistNameTaken = querySnapshot.docs.some(
+    doc => doc.get('ownerUid') !== currentUserUid,
+  );
+
+  if (querySnapshot.docs.length > 0 && isPlaylistNameTaken) {
+    return {
+      status: SNACKBAR_STATUS.ERROR,
+      message: STORE_ERRORS.PLAYLIST_EXISTS,
+    };
+  }
+
+  const playlistRef = doc(db, 'playlists', name);
+
+  await setDoc(playlistRef, {
+    name,
+    ownerUid: currentUserUid,
+    trackNames,
+    date: Timestamp.fromDate(new Date()),
+  });
+
+  return {
+    status: SNACKBAR_STATUS.SUCCESS,
+    message: 'Playlist successfully saved!',
+  };
+}
+
+export async function getPlaylists({ name, ownerUid }: { name?: string; ownerUid?: string }) {
+  const col = collection(db, 'playlists');
+  let q;
+  if (name && ownerUid) {
+    q = query(col, where('name', '==', name), where('ownerUid', '==', ownerUid));
+  } else if (name) {
+    q = query(col, where('name', '==', name));
+  } else if (ownerUid) {
+    q = query(col, where('ownerUid', '==', ownerUid));
+  } else {
+    q = query(col);
+  }
+
+  const querySnapshot = await getDocs(q);
+  const data: Array<PlaylistDto> = [];
+  querySnapshot.forEach(doc => {
+    data.push(doc.data() as PlaylistDto);
+  });
+  console.log('data: ', data);
+
+  const extendedData = await Promise.all(
+    data.map(async playlist => {
+      const extendedPlaylist = { ...playlist, tracks: [] as Array<TrackDto> };
+      if (extendedPlaylist.trackNames.length === 0) return extendedPlaylist;
+
+      extendedPlaylist.tracks = await Promise.all(
+        playlist.trackNames.map(async name => {
+          const track = await getTrackByName({ name });
+          return track as TrackDto;
+        }),
+      );
+
+      return extendedPlaylist;
+    }),
+  );
+
+  return extendedData;
 }
