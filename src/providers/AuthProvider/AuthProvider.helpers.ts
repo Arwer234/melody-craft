@@ -9,9 +9,9 @@ import {
 } from 'firebase/auth';
 import { AUTH_STATUSES } from './AuthProvider.constants';
 import { firebaseApp } from '../../firebase';
-import { Firestore, collection, doc, getDoc, getDocs, query, setDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, setDoc } from 'firebase/firestore';
 import { db } from '../StoreProvider/StoreProvider.helpers';
-import { FirestoreUser, FirestoreUserExtended } from './AuthProvider.types';
+import { FirestoreUserExtended } from './AuthProvider.types';
 
 export const auth = getAuth(firebaseApp);
 

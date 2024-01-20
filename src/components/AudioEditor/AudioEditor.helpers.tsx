@@ -1,4 +1,4 @@
-import { audioContext } from './AudioEditor.constants';
+import { audioContext } from '../../pages/Editor/Editor.constants';
 import { EQUALIZER_BANDS } from './Equalizer/Equalizer.constants';
 
 export function getDefaultEqualizer() {

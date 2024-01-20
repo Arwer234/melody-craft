@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import Equalizer from './Equalizer/Equalizer';
 import AudioTrack from './AudioTrack/AudioTrack';
-import { ACTIVE_STEPS, DEFAULT_SAMPLE_OPTIONS, audioContext } from './AudioEditor.constants';
+import { ACTIVE_STEPS, DEFAULT_SAMPLE_OPTIONS } from './AudioEditor.constants';
 import { Box, IconButton } from '@mui/material';
 import AudioTimeline from './AudioTimeline/AudioTimeline';
 import Controls from '../Controls/Controls';
@@ -12,6 +12,8 @@ import { StoreContext } from '../../providers/StoreProvider/StoreProvider';
 import { UIContext } from '../../providers/UIProvider/UIProvider';
 import { getMusicFileSrc } from '../../providers/StoreProvider/StoreProvider.helpers';
 import { getDefaultEqualizer } from './AudioEditor.helpers';
+import Loading from '../../pages/Loading/Loading';
+import { audioContext } from '../../pages/Editor/Editor.constants';
 
 export default function AudioEditor({
   setActiveStep,
@@ -23,6 +25,7 @@ export default function AudioEditor({
   volumes,
   equalizers,
   selectedTrackId,
+  isLoading,
 }: AudioEditorProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -280,108 +283,111 @@ export default function AudioEditor({
 
   return (
     <Box width="100%" height="100%" padding={2}>
-      <Box
-        display="flex"
-        flexDirection="column"
-        justifyContent="space-between"
-        width="100%"
-        minHeight="100%"
-        gap={2}
-      >
-        <Box height="100%" display="flex" flexDirection="column" gap={2}>
-          <Box
-            position="relative"
-            sx={{ overflowX: 'scroll', overflowY: 'hidden', minHeight: 480 }}
-          >
-            {
-              // TODO: add duration based on tracks
-            }
-            <AudioTimeline currentTime={currentTime} duration={238000} />
-            <Box display="flex" flexDirection="column" gap={1}>
-              {playlines.map((samples, lineIndex) => (
-                <Box
-                  key={`playline_${lineIndex}`}
-                  display="flex"
-                  gap={4}
-                  onDragOver={(event: React.DragEvent<HTMLDivElement>) => event?.preventDefault()}
-                >
-                  <Box display="flex">
-                    <IconButton
-                      onClick={() =>
-                        onVolumeChange(
-                          volumes.find(item => samples.some(sample => sample.id === item.id))
-                            ?.value === 0
-                            ? 100
-                            : 0,
-                          lineIndex,
-                        )
-                      }
-                      size="large"
-                    >
-                      {volumes.find(item => samples.some(sample => sample.id === item.id))
-                        ?.value === 0 ? (
-                        <VolumeOff color="primary" fontSize="inherit" />
-                      ) : (
-                        <VolumeOffOutlined fontSize="inherit" />
-                      )}
-                    </IconButton>
+      {isLoading && <Loading />}
+      {!isLoading && (
+        <Box
+          display="flex"
+          flexDirection="column"
+          justifyContent="space-between"
+          width="100%"
+          minHeight="100%"
+          gap={2}
+        >
+          <Box height="100%" display="flex" flexDirection="column" gap={2}>
+            <Box
+              position="relative"
+              sx={{ overflowX: 'scroll', overflowY: 'hidden', minHeight: 480 }}
+            >
+              {
+                // TODO: add duration based on tracks
+              }
+              <AudioTimeline currentTime={currentTime} duration={238000} />
+              <Box display="flex" flexDirection="column" gap={1}>
+                {playlines.map((samples, lineIndex) => (
+                  <Box
+                    key={`playline_${lineIndex}`}
+                    display="flex"
+                    gap={4}
+                    onDragOver={(event: React.DragEvent<HTMLDivElement>) => event?.preventDefault()}
+                  >
+                    <Box display="flex">
+                      <IconButton
+                        onClick={() =>
+                          onVolumeChange(
+                            volumes.find(item => samples.some(sample => sample.id === item.id))
+                              ?.value === 0
+                              ? 100
+                              : 0,
+                            lineIndex,
+                          )
+                        }
+                        size="large"
+                      >
+                        {volumes.find(item => samples.some(sample => sample.id === item.id))
+                          ?.value === 0 ? (
+                          <VolumeOff color="primary" fontSize="inherit" />
+                        ) : (
+                          <VolumeOffOutlined fontSize="inherit" />
+                        )}
+                      </IconButton>
+                    </Box>
+                    <Box position="relative" height={128}>
+                      {samples.map((sample, sampleIndex) => {
+                        return (
+                          <AudioTrack
+                            isPlaying={
+                              isPlaying &&
+                              sample.state === 'playing' &&
+                              (sample.startTime ? sample.startTime * 1000 : 0) <= currentTime
+                            }
+                            key={`${sample.url}_${sampleIndex}`}
+                            isSelected={selectedTrackId === sample.id}
+                            options={sample}
+                            onFinish={() => onSampleFinish(lineIndex, sampleIndex)}
+                            onSeek={(time: number) => onSampleSeek(time)}
+                            seekTime={seekTime}
+                            filters={equalizers.find(item => item.id === sample.id)?.filters ?? []}
+                            volume={volumes.find(item => item.id === sample.id)?.value ?? 100}
+                            onDblClick={() => setSelectedTrackId(sample.id)}
+                            onDragEnd={(time: number) =>
+                              onActiveSampleDragEnd(time, lineIndex, sampleIndex)
+                            }
+                            startTime={sample.startTime}
+                            onRemove={() => onRemoveSample(lineIndex, sampleIndex)}
+                            onAdd={(time: number) => onCopySample(time, sample.id)}
+                          />
+                        );
+                      })}
+                    </Box>
                   </Box>
-                  <Box position="relative" height={128}>
-                    {samples.map((sample, sampleIndex) => {
-                      return (
-                        <AudioTrack
-                          isPlaying={
-                            isPlaying &&
-                            sample.state === 'playing' &&
-                            (sample.startTime ? sample.startTime * 1000 : 0) <= currentTime
-                          }
-                          key={`${sample.url}_${sampleIndex}`}
-                          isSelected={selectedTrackId === sample.id}
-                          options={sample}
-                          onFinish={() => onSampleFinish(lineIndex, sampleIndex)}
-                          onSeek={(time: number) => onSampleSeek(time)}
-                          seekTime={seekTime}
-                          filters={equalizers.find(item => item.id === sample.id)?.filters ?? []}
-                          volume={volumes.find(item => item.id === sample.id)?.value ?? 100}
-                          onDblClick={() => setSelectedTrackId(sample.id)}
-                          onDragEnd={(time: number) =>
-                            onActiveSampleDragEnd(time, lineIndex, sampleIndex)
-                          }
-                          startTime={sample.startTime}
-                          onRemove={() => onRemoveSample(lineIndex, sampleIndex)}
-                          onAdd={(time: number) => onCopySample(time, sample.id)}
-                        />
-                      );
-                    })}
-                  </Box>
-                </Box>
-              ))}
+                ))}
+              </Box>
+            </Box>
+            <Box display="flex" flexDirection={['column', 'row']} gap={2}>
+              <Box flex={2}>
+                <Equalizer
+                  filters={equalizers.find(item => item.id === selectedTrackId)?.filters ?? []}
+                  onFilterChange={onFilterChange}
+                />
+              </Box>
+              <Box flex={1}>
+                <SamplePicker
+                  sampleData={musicFilesMetadata}
+                  isMusicFilesMetadataLoaded={isMusicFilesMetadataLoaded}
+                  onDrag={onSamplePickerItemDrag}
+                />
+              </Box>
             </Box>
           </Box>
-          <Box display="flex" flexDirection={['column', 'row']} gap={2}>
-            <Box flex={2}>
-              <Equalizer
-                filters={equalizers.find(item => item.id === selectedTrackId)?.filters ?? []}
-                onFilterChange={onFilterChange}
-              />
-            </Box>
-            <Box flex={1}>
-              <SamplePicker
-                sampleData={musicFilesMetadata}
-                isMusicFilesMetadataLoaded={isMusicFilesMetadataLoaded}
-                onDrag={onSamplePickerItemDrag}
-              />
-            </Box>
-          </Box>
+          <Controls
+            isPlaying={isPlaying}
+            onPlay={onPlayToggle}
+            onSkipNext={onSkipNext}
+            onSkipPrevious={onSkipPrevious}
+            onNextClick={handleNextClick}
+          />
         </Box>
-        <Controls
-          isPlaying={isPlaying}
-          onPlay={onPlayToggle}
-          onSkipNext={onSkipNext}
-          onSkipPrevious={onSkipPrevious}
-          onNextClick={handleNextClick}
-        />
-      </Box>
+      )}
     </Box>
   );
 }

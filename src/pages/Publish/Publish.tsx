@@ -11,6 +11,7 @@ import {
   RadioGroup,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { Field, Form, Formik } from 'formik';
@@ -25,8 +26,15 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTE_PATHS } from '../../routes';
 import FileDialog from '../MyFiles/FileDialog/FileDialog';
 import { ACCEPTED_FILE_TYPES } from '../MyFiles/FileDialog/FileDialog.constants';
+import { Help } from '@mui/icons-material';
 
-export default function Publish({ onSubmit, isExisting, existingName }: PublishProps) {
+export default function Publish({
+  onSubmit,
+  isExisting,
+  existingName,
+  existingDescription,
+  isModeLocked,
+}: PublishProps) {
   const [tags, setTags] = useState<Array<string>>([]);
   const [file, setFile] = useState<File | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -36,7 +44,7 @@ export default function Publish({ onSubmit, isExisting, existingName }: PublishP
     values: PublishFormValues,
     setSubmitting: (isSubmitting: boolean) => void,
   ) {
-    const response = await onSubmit({ ...values, tags, file });
+    const response = await onSubmit({ ...values, tags, file, isExisting });
 
     if (response === 'error') {
       setSubmitting(false);
@@ -62,7 +70,7 @@ export default function Publish({ onSubmit, isExisting, existingName }: PublishP
             }}
             initialValues={{
               name: existingName ?? '',
-              description: '',
+              description: existingDescription ?? '',
               tags: [],
               visibility: PUBLISH_VISIBILITY.PUBLIC,
               mode: EXISTING_TRACK_OPTIONS.CREATE,
@@ -196,17 +204,24 @@ export default function Publish({ onSubmit, isExisting, existingName }: PublishP
                     </Box>
                     {isExisting && (
                       <Box mt={2}>
-                        <FormLabel id="existing-label">Mode</FormLabel>
+                        <Box display="flex" gap={1}>
+                          <FormLabel id="existing-label">Mode</FormLabel>
+                          <Tooltip title="You cannot change mode, because you are editing another users' track">
+                            <Help fontSize="small" />
+                          </Tooltip>
+                        </Box>
                         <Field component={RadioGroup} name="mode">
                           <FormControlLabel
                             value={EXISTING_TRACK_OPTIONS.CREATE}
                             control={<Radio />}
                             label="Create a new track"
+                            disabled={isModeLocked}
                           />
                           <FormControlLabel
                             value={EXISTING_TRACK_OPTIONS.EDIT}
                             control={<Radio />}
                             label="Edit existing track"
+                            disabled={isModeLocked}
                           />
                         </Field>
                       </Box>

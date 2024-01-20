@@ -15,7 +15,7 @@ export const StoreContext = createContext<StoreContextType>({
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const { userInfo } = useAuth();
   const { data, isFetched } = useQuery<StoreContextType['musicFilesMetadata']>({
-    queryKey: ['musicFilesMetadata'],
+    queryKey: ['musicFilesMetadata', userInfo?.uid],
     queryFn: fetchMusicFilesMetadata,
   });
 

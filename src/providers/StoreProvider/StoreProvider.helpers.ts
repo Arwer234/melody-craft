@@ -2,6 +2,7 @@ import {
   DocumentData,
   Query,
   Timestamp,
+  addDoc,
   collection,
   deleteDoc,
   doc,
@@ -10,6 +11,7 @@ import {
   getFirestore,
   query,
   setDoc,
+  updateDoc,
   where,
 } from 'firebase/firestore';
 import {
@@ -35,6 +37,8 @@ import { auth, getUserDisplayName } from '../AuthProvider/AuthProvider.helpers';
 import { EqualizerType, Sample, Volume } from '../../components/AudioEditor/AudioEditor.types';
 import { EXISTING_TRACK_OPTIONS, PUBLISH_VISIBILITY } from '../../pages/Publish/Publish.constants';
 import { SNACKBAR_STATUS } from '../../hooks/useSnackbar/useSnackbar.constants';
+import { NOTIFICATION_TYPES } from '../../components/NavigationBar/NotificationMenu/NotificationMenu.constants';
+import { NotificationDto } from '../../components/NavigationBar/NotificationMenu/NotificationMenu.types';
 
 export const db = getFirestore(firebaseApp);
 export const storage = getStorage(firebaseApp);
@@ -120,9 +124,14 @@ export async function getMusicFileSrc(fileName: string, fileType: FileType) {
   return url;
 }
 
-export async function getAudioEditorTracks() {
+export async function getAudioEditorTracks({ isOwnTracks }: { isOwnTracks: boolean }) {
   const currentUserUid = auth.currentUser?.uid;
-  const q = query(collection(db, 'tracks'), where('ownerUid', '==', currentUserUid));
+  let q;
+  if (isOwnTracks) {
+    q = query(collection(db, 'tracks'), where('ownerUid', '==', currentUserUid));
+  } else {
+    q = query(collection(db, 'tracks'));
+  }
 
   const querySnapshot = await getDocs(q);
   const data: Array<{
@@ -148,21 +157,27 @@ export async function getAudioEditorTracks() {
     data.push(parsedDoc);
   });
 
-  data.forEach(track => {
-    track.playlines.forEach(playline => {
-      playline.forEach(sample => {
-        getMusicFileSrc(sample.name, 'sample')
-          .then(url => {
-            sample.src = url;
-          })
-          .catch(error => {
-            console.log(error);
-          });
-      });
-    });
-  });
+  const resolvedData = await Promise.all(
+    data.map(async track => {
+      const resolvedPlaylines = await Promise.all(
+        track.playlines.map(async playline => {
+          const resolvedSamples = await Promise.all(
+            playline.map(async sample => {
+              const src = await getMusicFileSrc(sample.name, 'sample');
+              const newSample = { ...sample, src };
 
-  return data;
+              return newSample;
+            }),
+          );
+          return resolvedSamples;
+        }),
+      );
+
+      return { ...track, playlines: resolvedPlaylines };
+    }),
+  );
+
+  return resolvedData;
 }
 
 export async function getImagePath(fileName: string) {
@@ -267,8 +282,11 @@ export async function setTrack({
   mode,
   visibility,
   description,
+  previousName,
+  isEditingAnotherUsersTrack,
 }: {
   name: string;
+  previousName?: string;
   file: File | null;
   volumes: Array<Volume>;
   mode: (typeof EXISTING_TRACK_OPTIONS)[keyof typeof EXISTING_TRACK_OPTIONS];
@@ -277,13 +295,16 @@ export async function setTrack({
   tags: Array<string>;
   visibility: (typeof PUBLISH_VISIBILITY)[keyof typeof PUBLISH_VISIBILITY];
   description: string;
+  isEditingAnotherUsersTrack: boolean;
 }): Promise<{ status: (typeof SNACKBAR_STATUS)[keyof typeof SNACKBAR_STATUS]; message: string }> {
   const currentUserUid = auth.currentUser?.uid;
-  const q = query(collection(db, 'tracks'), where('name', '==', name));
+  const q = query(collection(db, 'tracks'), where('name', '==', previousName));
 
   const querySnapshot = await getDocs(q);
+  const existingTrack =
+    querySnapshot.docs.length === 1 ? (querySnapshot.docs[0].data() as TrackDto) : null;
 
-  if (querySnapshot.docs.length > 0 && mode === EXISTING_TRACK_OPTIONS.CREATE) {
+  if (existingTrack && mode === EXISTING_TRACK_OPTIONS.CREATE && !isEditingAnotherUsersTrack) {
     return {
       status: SNACKBAR_STATUS.ERROR,
       message: STORE_ERRORS.TRACK_EXISTS,
@@ -308,6 +329,10 @@ export async function setTrack({
     return parsedPlayline;
   });
 
+  const editingUsersIds = existingTrack ? existingTrack.editingUsersIds : [currentUserUid];
+  const isNewTrack = editingUsersIds.length === 1 && editingUsersIds[0] === currentUserUid;
+  const isEditingOwnTrack = editingUsersIds[editingUsersIds.length - 1] === currentUserUid;
+
   await setDoc(trackRef, {
     name,
     ownerUid: currentUserUid,
@@ -316,9 +341,21 @@ export async function setTrack({
     visibility,
     description,
     date: Timestamp.fromDate(new Date()),
-    likes: 0,
     image: file ? file.name : null,
+    editingUsersIds: isNewTrack ? [currentUserUid] : [...editingUsersIds, currentUserUid],
   });
+
+  if (!isNewTrack && !isEditingOwnTrack) {
+    const newNotification = {
+      title: 'Track used',
+      description: `Track ${previousName} has been used in a new track '${name}'! Check it out!`,
+      isRead: false,
+      type: NOTIFICATION_TYPES.EDITED_TRACK,
+      ownerUid: editingUsersIds[editingUsersIds.length - 1],
+    };
+
+    await addDoc(collection(db, 'notifications'), newNotification);
+  }
 
   if (file) {
     const storageRef = ref(storage, `images/${file.name}`);
@@ -336,6 +373,28 @@ export async function setTrack({
   return {
     status: SNACKBAR_STATUS.SUCCESS,
     message: 'Track successfully saved!',
+  };
+}
+
+export async function getNotifications() {
+  const ownerUid = auth.currentUser?.uid;
+  const q = query(collection(db, 'notifications'), where('ownerUid', '==', ownerUid));
+  const querySnapshot = await getDocs(q);
+  const data: Array<NotificationDto> = [];
+  querySnapshot.forEach(doc => {
+    data.push({ id: doc.id, ...doc.data() } as NotificationDto);
+  });
+
+  return data;
+}
+
+export async function setNotificationAsRead({ id }: { id: string }) {
+  const notificationRef = doc(db, 'notifications', id);
+  await updateDoc(notificationRef, { isRead: true });
+
+  return {
+    status: SNACKBAR_STATUS.SUCCESS,
+    message: 'Notification marked as read!',
   };
 }
 

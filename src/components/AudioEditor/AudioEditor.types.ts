@@ -29,4 +29,5 @@ export type AudioEditorProps = {
   setPlaylines: Dispatch<SetStateAction<Array<Array<Sample>>>>;
   setVolumes: Dispatch<SetStateAction<Array<Volume>>>;
   setSelectedTrackId: Dispatch<SetStateAction<string | null>>;
+  isLoading: boolean;
 };

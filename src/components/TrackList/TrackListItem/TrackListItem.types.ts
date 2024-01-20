@@ -1,4 +1,4 @@
-import { TrackDto } from '../../../providers/StoreProvider/StoreProvider.types';
+import { TrackExtendedDto } from '../../../providers/StoreProvider/StoreProvider.types';
 import { FirestoreUserExtended } from '../../../providers/AuthProvider/AuthProvider.types';
 
 export type TrackListItemCustomProps = {
@@ -8,4 +8,4 @@ export type TrackListItemCustomProps = {
   user?: FirestoreUserExtended;
 };
 
-export type TrackListItemProps = TrackDto & TrackListItemCustomProps;
+export type TrackListItemProps = TrackExtendedDto & TrackListItemCustomProps;

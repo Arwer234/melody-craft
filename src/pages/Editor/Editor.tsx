@@ -13,11 +13,10 @@ import {
   Stepper,
 } from '@mui/material';
 import AudioEditor from '../../components/AudioEditor/AudioEditor';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
   ACTIVE_STEPS,
   DEFAULT_SAMPLE_OPTIONS,
-  audioContext,
 } from '../../components/AudioEditor/AudioEditor.constants';
 import Publish from '../Publish/Publish';
 import { Add } from '@mui/icons-material';
@@ -30,20 +29,33 @@ import { UIContext } from '../../providers/UIProvider/UIProvider';
 import { EqualizerType, Sample, Volume } from '../../components/AudioEditor/AudioEditor.types';
 import { EQUALIZER_BANDS } from '../../components/AudioEditor/Equalizer/Equalizer.constants';
 import { PublishFormValues, SubmitCustomValues } from '../Publish/Publish.types';
-import { TRACK_STORE_ERROR_TO_MESSAGE } from './Editor.constants';
+import { TRACK_STORE_ERROR_TO_MESSAGE, audioContext } from './Editor.constants';
 import { SNACKBAR_STATUS } from '../../hooks/useSnackbar/useSnackbar.constants';
+import { useLocation } from 'react-router-dom';
+import useAuth from '../../hooks/useAuth/useAuth';
 
 export default function Editor() {
   const [activeStep, setActiveStep] = useState<number>(ACTIVE_STEPS.CREATE);
   const [isTrackDialogOpen, setIsTrackDialogOpen] = useState<boolean>(false);
   const [selectedExistingTrackId, setSelectedExistingTrackId] = useState<string | null>(null);
+  const [isEditingAnotherUsersTrack, setIsEditingAnotherUsersTrack] = useState(false);
   const [volumes, setVolumes] = useState<Array<Volume>>([]);
   const [equalizers, setEqualizers] = useState<Array<EqualizerType>>([]);
   const [playlines, setPlaylines] = useState<Array<Array<Sample>>>([]);
-  const { data: userTracks } = useQuery({
+  const { userInfo } = useAuth();
+
+  const location = useLocation();
+  const existingTrackName = new URLSearchParams(location.search).get('trackName');
+
+  const { data: userTracks, isFetching: isUserTracksLoading } = useQuery({
     queryKey: ['audioEditorTracks'],
-    queryFn: getAudioEditorTracks,
+    queryFn: () => getAudioEditorTracks({ isOwnTracks: !existingTrackName }),
   });
+
+  const filteredUserTracks = existingTrackName
+    ? userTracks
+    : userTracks?.filter(track => track.ownerUid === userInfo?.uid);
+
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
 
   const { showSnackbar } = useContext(UIContext);
@@ -55,18 +67,19 @@ export default function Editor() {
   function onTrackSelect(isNewTrack: boolean, trackId?: string | null) {
     if (isNewTrack) setActiveStep(ACTIVE_STEPS.EDIT);
     else {
-      const selectedPlaylines = userTracks?.find(track => track.id === trackId)?.playlines;
+      const selectedPlaylines = filteredUserTracks?.find(track => track.id === trackId)?.playlines;
       if (selectedPlaylines !== undefined) {
-        const newPlaylines = selectedPlaylines.map(line =>
-          line.map(sample => ({
+        const newPlaylines = selectedPlaylines.map(line => {
+          return line.map(sample => ({
             name: sample.name,
             url: sample.src,
             ...DEFAULT_SAMPLE_OPTIONS,
             container: `wavesurfer_${sample.id}`,
             startTime: sample.startTime,
             id: sample.id,
-          })),
-        );
+          }));
+        });
+
         const newEqualizers: Array<EqualizerType> = [];
         selectedPlaylines.forEach(line => {
           line.forEach(sample => {
@@ -101,7 +114,17 @@ export default function Editor() {
   async function handleSubmit(
     values: PublishFormValues & SubmitCustomValues,
   ): Promise<(typeof SNACKBAR_STATUS)[keyof typeof SNACKBAR_STATUS]> {
-    const response = await setTrack({ ...values, playlines, volumes, equalizers });
+    const previousTrackName = filteredUserTracks?.find(
+      track => track.id === selectedExistingTrackId,
+    )?.name;
+    const response = await setTrack({
+      ...values,
+      playlines,
+      volumes,
+      equalizers,
+      previousName: previousTrackName,
+      isEditingAnotherUsersTrack: isEditingAnotherUsersTrack,
+    });
     if (response.status === 'success') {
       showSnackbar({
         message: response.message,
@@ -116,6 +139,14 @@ export default function Editor() {
 
     return response.status;
   }
+
+  useEffect(() => {
+    if (existingTrackName && activeStep === ACTIVE_STEPS.CREATE && userTracks) {
+      setSelectedExistingTrackId(existingTrackName);
+      setIsEditingAnotherUsersTrack(true);
+      onTrackSelect(false, existingTrackName);
+    }
+  }, [existingTrackName, userTracks]);
 
   return (
     <Box
@@ -148,7 +179,7 @@ export default function Editor() {
                 onChange={handleExistingTracksChange}
                 value={selectedExistingTrackId}
               >
-                {userTracks?.map(track => (
+                {filteredUserTracks?.map(track => (
                   <FormControlLabel
                     key={track.id}
                     value={track.id}
@@ -198,13 +229,17 @@ export default function Editor() {
           equalizers={equalizers}
           setActiveStep={setActiveStep}
           setSelectedTrackId={setSelectedTrackId}
+          isLoading={isUserTracksLoading}
         />
       )}
       {activeStep === ACTIVE_STEPS.PUBLISH && (
         <Publish
           onSubmit={handleSubmit}
           isExisting={selectedExistingTrackId !== null}
-          existingName={userTracks?.find(track => track.id === selectedExistingTrackId)?.name}
+          existingName={
+            filteredUserTracks?.find(track => track.id === selectedExistingTrackId)?.name
+          }
+          isModeLocked={isEditingAnotherUsersTrack}
         />
       )}
     </Box>

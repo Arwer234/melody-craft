@@ -39,6 +39,7 @@ export type TrackDto = {
   visibility: (typeof PUBLISH_VISIBILITY)[keyof typeof PUBLISH_VISIBILITY];
   date: Timestamp;
   image: string;
+  editingUsersIds: Array<string>;
 };
 
 export type TrackExtendedDto = TrackDto & {

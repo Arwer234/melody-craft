@@ -2,9 +2,9 @@ import { Box, Fade, IconButton, useTheme } from '@mui/material';
 import { useRef, useEffect } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import { AudioTrackProps } from './AudioTrack.types';
-import { audioContext } from '../AudioEditor.constants';
 import { TIMELINE_TILE_DURATION } from '../AudioTimeline/AudioTimeline.constants';
 import { Add, Delete } from '@mui/icons-material';
+import { audioContext } from '../../../pages/Editor/Editor.constants';
 
 export default function AudioTrack({
   isPlaying,

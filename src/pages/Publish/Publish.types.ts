@@ -11,6 +11,7 @@ export type PublishFormValues = {
 
 export type SubmitCustomValues = {
   file: File | null;
+  isExisting: boolean;
 };
 
 export type PublishProps = {
@@ -19,4 +20,6 @@ export type PublishProps = {
   ) => Promise<(typeof SNACKBAR_STATUS)[keyof typeof SNACKBAR_STATUS]>;
   isExisting: boolean;
   existingName?: string;
+  existingDescription?: string;
+  isModeLocked: boolean;
 };

@@ -1,10 +1,10 @@
-import { Paper, Box, Typography, IconButton } from '@mui/material';
+import { Paper, Box, Typography, IconButton, Link } from '@mui/material';
 import { TrackListItemProps } from './TrackListItem.types';
 import TagList from '../../TagList/TagList';
-import { Add } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { Add, Edit } from '@mui/icons-material';
 import { ROUTE_PATHS } from '../../../routes';
 import placeholderImageUrl from '../../../assets/images/placeholder_track_cover.png';
+import { useNavigate } from 'react-router-dom';
 
 export default function TrackListItem({
   name,
@@ -14,7 +14,13 @@ export default function TrackListItem({
   onAddToPlaylist,
   user,
 }: TrackListItemProps) {
+  const navigate = useNavigate();
+
   const userProfileLink = `${ROUTE_PATHS.PROFILE}?id=${user?.uid}`;
+
+  function handleEditClick() {
+    navigate(`${ROUTE_PATHS.EDITOR}?trackName=${name}`);
+  }
   return (
     <Paper>
       <Box display="flex" padding={2} justifyContent="space-around">
@@ -33,12 +39,18 @@ export default function TrackListItem({
             alignItems="flex-start"
             gap={2}
           >
-            <Typography>
-              <Link to={userProfileLink}>{user?.displayName}</Link> - {name}
-            </Typography>
-            <IconButton onClick={() => onAddToPlaylist({ trackName: name })}>
-              <Add fontSize="inherit" />
-            </IconButton>
+            <Box display="flex">
+              <Link href={userProfileLink}>{user?.displayName}</Link>
+              <Typography>&nbsp;- {name}</Typography>
+            </Box>
+            <Box display="flex">
+              <IconButton onClick={() => onAddToPlaylist({ trackName: name })}>
+                <Add fontSize="inherit" />
+              </IconButton>
+              <IconButton onClick={() => handleEditClick()}>
+                <Edit fontSize="inherit" />
+              </IconButton>
+            </Box>
           </Box>
         </Box>
 
