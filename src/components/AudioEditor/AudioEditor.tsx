@@ -26,10 +26,13 @@ export default function AudioEditor({
   equalizers,
   selectedTrackId,
   isLoading,
+  isPlayOnlyMode,
+  trackName,
 }: AudioEditorProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [seekTime, setSeekTime] = useState<number | null>(null);
+  const [isPlayOnlyEditorShown, setIsPlayOnlyEditorShown] = useState(true);
 
   const { musicFilesMetadata, isMusicFilesMetadataLoaded } = useContext(StoreContext);
   const { showSnackbar } = useContext(UIContext);
@@ -281,8 +284,16 @@ export default function AudioEditor({
     };
   }, [isPlaying]);
 
+  useEffect(() => {
+    setIsPlayOnlyEditorShown(false);
+    setTimeout(() => {
+      setIsPlayOnlyEditorShown(true);
+    }, 100);
+    setIsPlaying(false);
+  }, [trackName]);
+
   return (
-    <Box width="100%" height="100%" padding={2}>
+    <Box width="100%" height="100%" padding={0}>
       {isLoading && <Loading />}
       {!isLoading && (
         <Box
@@ -293,98 +304,144 @@ export default function AudioEditor({
           minHeight="100%"
           gap={2}
         >
-          <Box height="100%" display="flex" flexDirection="column" gap={2}>
-            <Box
-              position="relative"
-              sx={{ overflowX: 'scroll', overflowY: 'hidden', minHeight: 480 }}
-            >
-              {
-                // TODO: add duration based on tracks
-              }
-              <AudioTimeline currentTime={currentTime} duration={238000} />
-              <Box display="flex" flexDirection="column" gap={1}>
-                {playlines.map((samples, lineIndex) => (
-                  <Box
-                    key={`playline_${lineIndex}`}
-                    display="flex"
-                    gap={4}
-                    onDragOver={(event: React.DragEvent<HTMLDivElement>) => event?.preventDefault()}
-                  >
-                    <Box display="flex">
-                      <IconButton
-                        onClick={() =>
-                          onVolumeChange(
-                            volumes.find(item => samples.some(sample => sample.id === item.id))
-                              ?.value === 0
-                              ? 100
-                              : 0,
-                            lineIndex,
-                          )
-                        }
-                        size="large"
-                      >
-                        {volumes.find(item => samples.some(sample => sample.id === item.id))
-                          ?.value === 0 ? (
-                          <VolumeOff color="primary" fontSize="inherit" />
-                        ) : (
-                          <VolumeOffOutlined fontSize="inherit" />
-                        )}
-                      </IconButton>
+          {!isPlayOnlyMode && (
+            <Box height="100%" display="flex" flexDirection="column" gap={2} padding={2}>
+              <Box
+                position="relative"
+                sx={{ overflowX: 'scroll', overflowY: 'hidden', minHeight: 480 }}
+              >
+                {
+                  // TODO: add duration based on tracks
+                }
+                <AudioTimeline currentTime={currentTime} duration={238000} />
+                <Box display="flex" flexDirection="column" gap={1}>
+                  {playlines.map((samples, lineIndex) => (
+                    <Box
+                      key={`playline_${lineIndex}`}
+                      display="flex"
+                      gap={4}
+                      onDragOver={(event: React.DragEvent<HTMLDivElement>) =>
+                        event?.preventDefault()
+                      }
+                    >
+                      <Box display="flex">
+                        <IconButton
+                          onClick={() =>
+                            onVolumeChange(
+                              volumes.find(item => samples.some(sample => sample.id === item.id))
+                                ?.value === 0
+                                ? 100
+                                : 0,
+                              lineIndex,
+                            )
+                          }
+                          size="large"
+                        >
+                          {volumes.find(item => samples.some(sample => sample.id === item.id))
+                            ?.value === 0 ? (
+                            <VolumeOff color="primary" fontSize="inherit" />
+                          ) : (
+                            <VolumeOffOutlined fontSize="inherit" />
+                          )}
+                        </IconButton>
+                      </Box>
+                      <Box position="relative" height={128}>
+                        {samples.map((sample, sampleIndex) => {
+                          return (
+                            <AudioTrack
+                              isPlaying={
+                                isPlaying &&
+                                sample.state === 'playing' &&
+                                (sample.startTime ? sample.startTime * 1000 : 0) <= currentTime
+                              }
+                              key={`${sample.url}_${sampleIndex}`}
+                              isSelected={selectedTrackId === sample.id}
+                              options={sample}
+                              onFinish={() => onSampleFinish(lineIndex, sampleIndex)}
+                              onSeek={(time: number) => onSampleSeek(time)}
+                              seekTime={seekTime}
+                              filters={
+                                equalizers.find(item => item.id === sample.id)?.filters ?? []
+                              }
+                              volume={volumes.find(item => item.id === sample.id)?.value ?? 100}
+                              onDblClick={() => setSelectedTrackId(sample.id)}
+                              onDragEnd={(time: number) =>
+                                onActiveSampleDragEnd(time, lineIndex, sampleIndex)
+                              }
+                              startTime={sample.startTime}
+                              onRemove={() => onRemoveSample(lineIndex, sampleIndex)}
+                              onAdd={(time: number) => onCopySample(time, sample.id)}
+                            />
+                          );
+                        })}
+                      </Box>
                     </Box>
-                    <Box position="relative" height={128}>
-                      {samples.map((sample, sampleIndex) => {
-                        return (
-                          <AudioTrack
-                            isPlaying={
-                              isPlaying &&
-                              sample.state === 'playing' &&
-                              (sample.startTime ? sample.startTime * 1000 : 0) <= currentTime
-                            }
-                            key={`${sample.url}_${sampleIndex}`}
-                            isSelected={selectedTrackId === sample.id}
-                            options={sample}
-                            onFinish={() => onSampleFinish(lineIndex, sampleIndex)}
-                            onSeek={(time: number) => onSampleSeek(time)}
-                            seekTime={seekTime}
-                            filters={equalizers.find(item => item.id === sample.id)?.filters ?? []}
-                            volume={volumes.find(item => item.id === sample.id)?.value ?? 100}
-                            onDblClick={() => setSelectedTrackId(sample.id)}
-                            onDragEnd={(time: number) =>
-                              onActiveSampleDragEnd(time, lineIndex, sampleIndex)
-                            }
-                            startTime={sample.startTime}
-                            onRemove={() => onRemoveSample(lineIndex, sampleIndex)}
-                            onAdd={(time: number) => onCopySample(time, sample.id)}
-                          />
-                        );
-                      })}
-                    </Box>
+                  ))}
+                </Box>
+              </Box>
+              <Box display="flex" flexDirection={['column', 'row']} gap={2}>
+                <Box flex={2}>
+                  <Equalizer
+                    filters={equalizers.find(item => item.id === selectedTrackId)?.filters ?? []}
+                    onFilterChange={onFilterChange}
+                  />
+                </Box>
+                <Box flex={1}>
+                  <SamplePicker
+                    sampleData={musicFilesMetadata}
+                    isMusicFilesMetadataLoaded={isMusicFilesMetadataLoaded}
+                    onDrag={onSamplePickerItemDrag}
+                  />
+                </Box>
+              </Box>
+            </Box>
+          )}
+
+          {isPlayOnlyMode && isPlayOnlyEditorShown && (
+            <Box sx={{ display: 'none' }}>
+              {playlines.map((samples, lineIndex) => (
+                <Box key={`playline_${lineIndex}`}>
+                  <Box position="relative" height={128}>
+                    {samples.map((sample, sampleIndex) => {
+                      return (
+                        <AudioTrack
+                          isPlaying={
+                            isPlaying &&
+                            sample.state === 'playing' &&
+                            (sample.startTime ? sample.startTime * 1000 : 0) <= currentTime
+                          }
+                          key={`${sample.url}_${sampleIndex}`}
+                          isSelected={selectedTrackId === sample.id}
+                          options={sample}
+                          onFinish={() => onSampleFinish(lineIndex, sampleIndex)}
+                          onSeek={(time: number) => onSampleSeek(time)}
+                          seekTime={seekTime}
+                          filters={equalizers.find(item => item.id === sample.id)?.filters ?? []}
+                          volume={volumes.find(item => item.id === sample.id)?.value ?? 100}
+                          onDblClick={() => setSelectedTrackId(sample.id)}
+                          onDragEnd={(time: number) =>
+                            onActiveSampleDragEnd(time, lineIndex, sampleIndex)
+                          }
+                          startTime={sample.startTime}
+                          onRemove={() => onRemoveSample(lineIndex, sampleIndex)}
+                          onAdd={(time: number) => onCopySample(time, sample.id)}
+                        />
+                      );
+                    })}
                   </Box>
-                ))}
-              </Box>
+                </Box>
+              ))}
             </Box>
-            <Box display="flex" flexDirection={['column', 'row']} gap={2}>
-              <Box flex={2}>
-                <Equalizer
-                  filters={equalizers.find(item => item.id === selectedTrackId)?.filters ?? []}
-                  onFilterChange={onFilterChange}
-                />
-              </Box>
-              <Box flex={1}>
-                <SamplePicker
-                  sampleData={musicFilesMetadata}
-                  isMusicFilesMetadataLoaded={isMusicFilesMetadataLoaded}
-                  onDrag={onSamplePickerItemDrag}
-                />
-              </Box>
-            </Box>
-          </Box>
+          )}
+
           <Controls
             isPlaying={isPlaying}
             onPlay={onPlayToggle}
             onSkipNext={onSkipNext}
             onSkipPrevious={onSkipPrevious}
-            onNextClick={handleNextClick}
+            onNextClick={isPlayOnlyMode ? undefined : handleNextClick}
+            isFixed={true}
+            trackName={trackName}
           />
         </Box>
       )}

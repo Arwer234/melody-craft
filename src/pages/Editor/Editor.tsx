@@ -14,10 +14,7 @@ import {
 } from '@mui/material';
 import AudioEditor from '../../components/AudioEditor/AudioEditor';
 import { useContext, useEffect, useState } from 'react';
-import {
-  ACTIVE_STEPS,
-  DEFAULT_SAMPLE_OPTIONS,
-} from '../../components/AudioEditor/AudioEditor.constants';
+import { ACTIVE_STEPS } from '../../components/AudioEditor/AudioEditor.constants';
 import Publish from '../Publish/Publish';
 import { Add } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
@@ -27,14 +24,14 @@ import {
 } from '../../providers/StoreProvider/StoreProvider.helpers';
 import { UIContext } from '../../providers/UIProvider/UIProvider';
 import { EqualizerType, Sample, Volume } from '../../components/AudioEditor/AudioEditor.types';
-import { EQUALIZER_BANDS } from '../../components/AudioEditor/Equalizer/Equalizer.constants';
 import { PublishFormValues, SubmitCustomValues } from '../Publish/Publish.types';
-import { TRACK_STORE_ERROR_TO_MESSAGE, audioContext } from './Editor.constants';
+import { TRACK_STORE_ERROR_TO_MESSAGE } from './Editor.constants';
 import { SNACKBAR_STATUS } from '../../hooks/useSnackbar/useSnackbar.constants';
 import { useLocation } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth/useAuth';
+import { userTracksToAudioEditorTrack } from './Editor.helpers';
 
-export default function Editor() {
+export default function Editor({ playingTrackName }: { playingTrackName?: string }) {
   const [activeStep, setActiveStep] = useState<number>(ACTIVE_STEPS.CREATE);
   const [isTrackDialogOpen, setIsTrackDialogOpen] = useState<boolean>(false);
   const [selectedExistingTrackId, setSelectedExistingTrackId] = useState<string | null>(null);
@@ -45,7 +42,8 @@ export default function Editor() {
   const { userInfo } = useAuth();
 
   const location = useLocation();
-  const existingTrackName = new URLSearchParams(location.search).get('trackName');
+  const existingTrackName =
+    new URLSearchParams(location.search).get('trackName') || playingTrackName;
 
   const { data: userTracks, isFetching: isUserTracksLoading } = useQuery({
     queryKey: ['audioEditorTracks'],
@@ -67,42 +65,16 @@ export default function Editor() {
   function onTrackSelect(isNewTrack: boolean, trackId?: string | null) {
     if (isNewTrack) setActiveStep(ACTIVE_STEPS.EDIT);
     else {
-      const selectedPlaylines = filteredUserTracks?.find(track => track.id === trackId)?.playlines;
-      if (selectedPlaylines !== undefined) {
-        const newPlaylines = selectedPlaylines.map(line => {
-          return line.map(sample => ({
-            name: sample.name,
-            url: sample.src,
-            ...DEFAULT_SAMPLE_OPTIONS,
-            container: `wavesurfer_${sample.id}`,
-            startTime: sample.startTime,
-            id: sample.id,
-          }));
-        });
+      const audioEditorTrack = userTracksToAudioEditorTrack({
+        userTracks: filteredUserTracks ?? [],
+        trackId: trackId ?? '',
+      });
 
-        const newEqualizers: Array<EqualizerType> = [];
-        selectedPlaylines.forEach(line => {
-          line.forEach(sample => {
-            const filters = EQUALIZER_BANDS.map((band, index) => {
-              const filter = audioContext.createBiquadFilter();
-              filter.type = band <= 32 ? 'lowshelf' : band >= 16000 ? 'highshelf' : 'peaking';
-              filter.gain.value = sample.gain[index] ?? 0;
-              filter.Q.value = 1;
-              filter.frequency.value = band;
-              return filter;
-            });
-            newEqualizers.push({ id: sample.id, filters });
-          });
-        });
-        const newVolumes = selectedPlaylines.map(line => {
-          const volume = line[0].volume;
-          return { id: line[0].id, value: volume } as Volume;
-        });
-
-        setPlaylines(newPlaylines);
-        setEqualizers(newEqualizers);
-        setVolumes(newVolumes);
-        setSelectedTrackId(newPlaylines[0][0].id);
+      if (audioEditorTrack) {
+        setPlaylines(audioEditorTrack.playlines);
+        setEqualizers(audioEditorTrack.equalizers);
+        setVolumes(audioEditorTrack.volumes);
+        setSelectedTrackId(audioEditorTrack.playlines[0][0].id);
         setIsTrackDialogOpen(false);
         setActiveStep(ACTIVE_STEPS.EDIT);
       } else {
@@ -115,7 +87,7 @@ export default function Editor() {
     values: PublishFormValues & SubmitCustomValues,
   ): Promise<(typeof SNACKBAR_STATUS)[keyof typeof SNACKBAR_STATUS]> {
     const previousTrackName = filteredUserTracks?.find(
-      track => track.id === selectedExistingTrackId,
+      track => track.name === selectedExistingTrackId,
     )?.name;
     const response = await setTrack({
       ...values,
@@ -140,13 +112,44 @@ export default function Editor() {
     return response.status;
   }
 
+  const isPlayOnlyMode = Boolean(playingTrackName);
+
+  // TODO: Layout shift bug when going from player in Discover into Editor
   useEffect(() => {
     if (existingTrackName && activeStep === ACTIVE_STEPS.CREATE && userTracks) {
       setSelectedExistingTrackId(existingTrackName);
       setIsEditingAnotherUsersTrack(true);
       onTrackSelect(false, existingTrackName);
+    } else if (
+      existingTrackName &&
+      activeStep === ACTIVE_STEPS.EDIT &&
+      userTracks &&
+      isPlayOnlyMode
+    ) {
+      setSelectedExistingTrackId(existingTrackName);
+      setIsEditingAnotherUsersTrack(true);
+      onTrackSelect(false, existingTrackName);
     }
   }, [existingTrackName, userTracks]);
+
+  if (isPlayOnlyMode) {
+    return (
+      <AudioEditor
+        playlines={playlines}
+        volumes={volumes}
+        setVolumes={setVolumes}
+        setEqualizers={setEqualizers}
+        setPlaylines={setPlaylines}
+        selectedTrackId={selectedTrackId}
+        equalizers={equalizers}
+        setActiveStep={setActiveStep}
+        setSelectedTrackId={setSelectedTrackId}
+        isLoading={isUserTracksLoading}
+        isPlayOnlyMode={true}
+        trackName={existingTrackName}
+      />
+    );
+  }
 
   return (
     <Box
@@ -157,91 +160,94 @@ export default function Editor() {
       flexDirection="column"
       justifyContent="flex-start"
     >
-      <Stepper activeStep={activeStep}>
-        <Step>
-          <StepLabel>Create a track</StepLabel>
-        </Step>
-        <Step>
-          <StepLabel>Select track settings</StepLabel>
-        </Step>
-        <Step>
-          <StepLabel>Publish</StepLabel>
-        </Step>
-      </Stepper>
-      {activeStep === ACTIVE_STEPS.CREATE && (
-        <>
-          <Dialog open={isTrackDialogOpen}>
-            <DialogTitle>Select existing track</DialogTitle>
-            <DialogContent dividers>
-              <RadioGroup
-                aria-label="existing tracks"
-                name={'existing tracks'}
-                onChange={handleExistingTracksChange}
-                value={selectedExistingTrackId}
-              >
-                {filteredUserTracks?.map(track => (
-                  <FormControlLabel
-                    key={track.id}
-                    value={track.id}
-                    control={<Radio />}
-                    label={track.name}
-                  />
-                ))}
-              </RadioGroup>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setIsTrackDialogOpen(false)}>Cancel</Button>
-              <Button onClick={() => onTrackSelect(false, selectedExistingTrackId)} autoFocus>
-                Select
-              </Button>
-            </DialogActions>
-          </Dialog>
-          <Box
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            width="100%"
-            height="100%"
-            gap={2}
-          >
-            <Button onClick={() => onTrackSelect(true)} variant="contained" startIcon={<Add />}>
-              Create a track
-            </Button>
-            <Button
-              onClick={() => {
-                setIsTrackDialogOpen(true);
-              }}
-              variant="contained"
+      <>
+        <Stepper activeStep={activeStep}>
+          <Step>
+            <StepLabel>Create a track</StepLabel>
+          </Step>
+          <Step>
+            <StepLabel>Select track settings</StepLabel>
+          </Step>
+          <Step>
+            <StepLabel>Publish</StepLabel>
+          </Step>
+        </Stepper>
+        {activeStep === ACTIVE_STEPS.CREATE && (
+          <>
+            <Dialog open={isTrackDialogOpen}>
+              <DialogTitle>Select existing track</DialogTitle>
+              <DialogContent dividers>
+                <RadioGroup
+                  aria-label="existing tracks"
+                  name={'existing tracks'}
+                  onChange={handleExistingTracksChange}
+                  value={selectedExistingTrackId}
+                >
+                  {filteredUserTracks?.map(track => (
+                    <FormControlLabel
+                      key={track.name}
+                      value={track.name}
+                      control={<Radio />}
+                      label={track.name}
+                    />
+                  ))}
+                </RadioGroup>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setIsTrackDialogOpen(false)}>Cancel</Button>
+                <Button onClick={() => onTrackSelect(false, selectedExistingTrackId)} autoFocus>
+                  Select
+                </Button>
+              </DialogActions>
+            </Dialog>
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              width="100%"
+              height="100%"
+              gap={2}
             >
-              Use existing track
-            </Button>
-          </Box>
-        </>
-      )}
-      {activeStep === ACTIVE_STEPS.EDIT && (
-        <AudioEditor
-          playlines={playlines}
-          volumes={volumes}
-          setVolumes={setVolumes}
-          setEqualizers={setEqualizers}
-          setPlaylines={setPlaylines}
-          selectedTrackId={selectedTrackId}
-          equalizers={equalizers}
-          setActiveStep={setActiveStep}
-          setSelectedTrackId={setSelectedTrackId}
-          isLoading={isUserTracksLoading}
-        />
-      )}
-      {activeStep === ACTIVE_STEPS.PUBLISH && (
-        <Publish
-          onSubmit={handleSubmit}
-          isExisting={selectedExistingTrackId !== null}
-          existingName={
-            filteredUserTracks?.find(track => track.id === selectedExistingTrackId)?.name
-          }
-          isModeLocked={isEditingAnotherUsersTrack}
-        />
-      )}
+              <Button onClick={() => onTrackSelect(true)} variant="contained" startIcon={<Add />}>
+                Create a track
+              </Button>
+              <Button
+                onClick={() => {
+                  setIsTrackDialogOpen(true);
+                }}
+                variant="contained"
+              >
+                Use existing track
+              </Button>
+            </Box>
+          </>
+        )}
+        {activeStep === ACTIVE_STEPS.EDIT && (
+          <AudioEditor
+            playlines={playlines}
+            volumes={volumes}
+            setVolumes={setVolumes}
+            setEqualizers={setEqualizers}
+            setPlaylines={setPlaylines}
+            selectedTrackId={selectedTrackId}
+            equalizers={equalizers}
+            setActiveStep={setActiveStep}
+            setSelectedTrackId={setSelectedTrackId}
+            isLoading={isUserTracksLoading}
+            trackName={existingTrackName}
+          />
+        )}
+        {activeStep === ACTIVE_STEPS.PUBLISH && (
+          <Publish
+            onSubmit={handleSubmit}
+            isExisting={selectedExistingTrackId !== null}
+            existingName={
+              filteredUserTracks?.find(track => track.name === selectedExistingTrackId)?.name
+            }
+            isModeLocked={isEditingAnotherUsersTrack}
+          />
+        )}
+      </>
     </Box>
   );
 }

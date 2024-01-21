@@ -36,7 +36,7 @@ export default function MyFiles() {
   const [uploadFileType, setUploadFileType] = useState<FileType>('track');
   const { userInfo } = useAuth();
   const { showSnackbar } = useSnackbar();
-  const { setSrc, audioPlayer, togglePlay, toggleAudioPlayer } = useContext(UIContext);
+  const { audioPlayer, togglePlay, toggleAudioPlayer } = useContext(UIContext);
   const {
     isMusicFilesMetadataLoaded,
     musicFilesMetadata: sampleFilesData,
@@ -91,10 +91,6 @@ export default function MyFiles() {
   }
 
   async function handleMusicTileDialogRemove(type: FileType) {
-    if (audioPlayer.fileName === selectedFileName && audioPlayer.isShown) {
-      toggleAudioPlayer();
-      setSrc('', '');
-    }
     const deleteResult = await deleteMusicFile({ fileName: selectedFileName, type });
 
     if (deleteResult.status === 'error') {
@@ -108,25 +104,23 @@ export default function MyFiles() {
   }
 
   function handleMusicTilePlay(fileName: string, fileType: FileType) {
-    if (audioPlayer.fileName !== fileName) {
-      getMusicFileSrc(fileName, fileType)
-        .then(url => {
-          setSrc(url, fileName);
-          if (!audioPlayer.isShown) {
-            toggleAudioPlayer();
-          }
-
-          setTimeout(togglePlay, 200);
-        })
-        .catch((error: Error) => {
-          showSnackbar({
-            message: `${PLAY_MUSIC_MESSAGES.FAILURE} ${error.message}`,
-            status: 'error',
-          });
-        });
-    } else {
-      togglePlay();
-    }
+    // if (audioPlayer.fileName !== fileName) {
+    //   getMusicFileSrc(fileName, fileType)
+    //     .then(url => {
+    //       if (!audioPlayer.isShown) {
+    //         toggleAudioPlayer();
+    //       }
+    //       setTimeout(togglePlay, 200);
+    //     })
+    //     .catch((error: Error) => {
+    //       showSnackbar({
+    //         message: `${PLAY_MUSIC_MESSAGES.FAILURE} ${error.message}`,
+    //         status: 'error',
+    //       });
+    //     });
+    // } else {
+    //   togglePlay();
+    // }
   }
 
   // function handleNextClick() {

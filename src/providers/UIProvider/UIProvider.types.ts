@@ -1,4 +1,5 @@
 import { SNACKBAR_STATUS } from '../../hooks/useSnackbar/useSnackbar.constants';
+import { AudioEditorTrack } from '../StoreProvider/StoreProvider.types';
 
 export type SnackbarType = {
   isShown: boolean;
@@ -7,7 +8,7 @@ export type SnackbarType = {
 };
 
 export type AudioPlayerType = {
-  src: string;
+  playlist: Array<AudioEditorTrack>;
   fileName: string;
   isPlaying: boolean;
   isShown: boolean;
@@ -24,6 +25,7 @@ export type UIContextType = {
   toggleDrawer: () => void;
   togglePlay: () => void;
   toggleAudioPlayer: () => void;
-  setSrc: (src: string, fileName: string) => void;
   audioPlayer: AudioPlayerType;
+  addToPlaylist: (trackName: string) => void;
+  isLoading: boolean;
 };

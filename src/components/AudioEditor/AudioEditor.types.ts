@@ -30,4 +30,6 @@ export type AudioEditorProps = {
   setVolumes: Dispatch<SetStateAction<Array<Volume>>>;
   setSelectedTrackId: Dispatch<SetStateAction<string | null>>;
   isLoading: boolean;
+  isPlayOnlyMode?: boolean;
+  trackName?: string;
 };

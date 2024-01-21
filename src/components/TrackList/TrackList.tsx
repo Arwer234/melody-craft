@@ -23,7 +23,13 @@ export default function TrackList({ tracks, isLoading, playlists }: TrackListPro
   const [trackNameToAdd, setTrackNameToAdd] = useState<string | null>(null);
   const [isAddToPlaylistDialogOpen, setIsAddToPlaylistDialogOpen] = useState(false);
   const [playlistTitle, setPlaylistTitle] = useState('');
-  const { showSnackbar } = useContext(UIContext);
+  const {
+    showSnackbar,
+    addToPlaylist,
+    audioPlayer,
+    toggleAudioPlayer,
+    isLoading: isAudioEditorTracksLoading,
+  } = useContext(UIContext);
   const { data: users } = useQuery({ queryKey: ['users'], queryFn: getAllUsers });
 
   function handleAddToPlaylistClick({ trackName }: { trackName: string }) {
@@ -50,6 +56,16 @@ export default function TrackList({ tracks, isLoading, playlists }: TrackListPro
 
   if (isLoading) {
     return <Skeleton variant="rectangular" height={288} />;
+  }
+
+  function handlePlayClick({ trackName }: { trackName: string }) {
+    if (audioPlayer.playlist.length === 0 || audioPlayer.playlist[0].name !== trackName)
+      addToPlaylist(trackName);
+    if (!audioPlayer.isShown) toggleAudioPlayer();
+    console.log();
+    if (audioPlayer.isPlaying) {
+      console.log('should stop');
+    }
   }
 
   return (
@@ -80,8 +96,10 @@ export default function TrackList({ tracks, isLoading, playlists }: TrackListPro
             <TrackListItem
               user={users?.find(user => user.uid === item.ownerUid)}
               onAddToPlaylist={handleAddToPlaylistClick}
+              onPlay={handlePlayClick}
               {...item}
               key={item.name}
+              isLoading={isAudioEditorTracksLoading}
             />
           ) : null,
         )}

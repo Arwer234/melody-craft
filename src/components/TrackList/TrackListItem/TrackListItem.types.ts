@@ -5,7 +5,9 @@ export type TrackListItemCustomProps = {
   displayName: string | null;
   image_path: string | null;
   onAddToPlaylist: ({ trackName }: { trackName: string }) => void;
+  onPlay: ({ trackName }: { trackName: string }) => void;
   user?: FirestoreUserExtended;
+  isLoading?: boolean;
 };
 
 export type TrackListItemProps = TrackExtendedDto & TrackListItemCustomProps;

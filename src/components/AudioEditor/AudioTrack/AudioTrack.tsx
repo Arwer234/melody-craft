@@ -28,7 +28,7 @@ export default function AudioTrack({
   const theme = useTheme();
 
   function handleSeeked() {
-    if (audioRef && audioRef.current && audioRef.current.currentTime > 0) {
+    if (audioRef && audioRef.current && audioRef.current.currentTime > 0 && onSeek) {
       onSeek((audioRef.current.currentTime + startTime) * 1000);
     }
   }
@@ -59,7 +59,7 @@ export default function AudioTrack({
       barRadius: 2,
     });
 
-    wavesurferRef.current?.on('dblclick', onDblClick);
+    if (onDblClick) wavesurferRef.current?.on('dblclick', onDblClick);
 
     if (audioRef.current) {
       audioRef.current.addEventListener('canplay', handleCanPlay, { once: true });
@@ -74,7 +74,7 @@ export default function AudioTrack({
     const newTimePosition = event.clientX - event.currentTarget.getBoundingClientRect().left;
     const newTime = (newTimePosition / timelineWidth) * audioRef.current.duration + startTime;
 
-    onDragEnd(newTime);
+    if (onDragEnd) onDragEnd(newTime);
   }
 
   function handleDragOver(event: React.DragEvent<HTMLDivElement>) {
@@ -84,7 +84,7 @@ export default function AudioTrack({
   function handleAddClick() {
     if (audioRef.current) {
       const newTime = audioRef.current?.duration + startTime;
-      onAdd(newTime);
+      if (onAdd) onAdd(newTime);
     }
   }
 
@@ -146,12 +146,14 @@ export default function AudioTrack({
   }, [isPlaying]);
 
   useEffect(() => {
-    if (audioRef.current && seekTime !== null && seekTime >= startTime * 1000) {
-      audioRef.current.currentTime = (seekTime - startTime * 1000) / 1000;
-    } else if (audioRef.current && seekTime !== null && seekTime < startTime * 1000) {
-      audioRef.current.currentTime = 0;
-    } else if (audioRef.current && seekTime !== null && seekTime >= audioRef.current.duration) {
-      audioRef.current.currentTime = audioRef.current.duration;
+    if (seekTime) {
+      if (audioRef.current && seekTime !== null && seekTime >= startTime * 1000) {
+        audioRef.current.currentTime = (seekTime - startTime * 1000) / 1000;
+      } else if (audioRef.current && seekTime !== null && seekTime < startTime * 1000) {
+        audioRef.current.currentTime = 0;
+      } else if (audioRef.current && seekTime !== null && seekTime >= audioRef.current.duration) {
+        audioRef.current.currentTime = audioRef.current.duration;
+      }
     }
   }, [seekTime, startTime]);
 

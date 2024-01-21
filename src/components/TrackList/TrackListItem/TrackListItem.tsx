@@ -1,10 +1,11 @@
 import { Paper, Box, Typography, IconButton, Link } from '@mui/material';
 import { TrackListItemProps } from './TrackListItem.types';
 import TagList from '../../TagList/TagList';
-import { Add, Edit } from '@mui/icons-material';
+import { Add, Edit, PlayArrow } from '@mui/icons-material';
 import { ROUTE_PATHS } from '../../../routes';
 import placeholderImageUrl from '../../../assets/images/placeholder_track_cover.png';
 import { useNavigate } from 'react-router-dom';
+import Spinner from '../../Spinner/Spinner';
 
 export default function TrackListItem({
   name,
@@ -12,7 +13,9 @@ export default function TrackListItem({
   date,
   tags,
   onAddToPlaylist,
+  onPlay,
   user,
+  isLoading,
 }: TrackListItemProps) {
   const navigate = useNavigate();
 
@@ -44,6 +47,12 @@ export default function TrackListItem({
               <Typography>&nbsp;- {name}</Typography>
             </Box>
             <Box display="flex">
+              {isLoading && <Spinner />}
+              {!isLoading && (
+                <IconButton onClick={() => onPlay({ trackName: name })}>
+                  <PlayArrow color="secondary" fontSize="inherit" />
+                </IconButton>
+              )}
               <IconButton onClick={() => onAddToPlaylist({ trackName: name })}>
                 <Add fontSize="inherit" />
               </IconButton>

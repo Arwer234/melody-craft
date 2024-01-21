@@ -1,5 +1,7 @@
 import React, { createContext, useState, useCallback } from 'react';
 import { AudioPlayerType, DrawerType, SnackbarType, UIContextType } from './UIProvider.types';
+import { useQuery } from '@tanstack/react-query';
+import { getAudioEditorTracks } from '../StoreProvider/StoreProvider.helpers';
 
 const SNACKBAR_TIMEOUT = 5000;
 
@@ -8,10 +10,11 @@ export const UIContext = createContext<UIContextType>({
   showSnackbar: () => {},
   toggleDrawer: () => {},
   snackbar: { isShown: false, message: undefined, status: undefined },
-  audioPlayer: { isPlaying: false, isShown: false, src: '', fileName: '' },
+  audioPlayer: { isPlaying: false, isShown: false, playlist: [], fileName: '' },
   togglePlay: () => {},
-  setSrc: () => {},
   toggleAudioPlayer: () => {},
+  addToPlaylist: () => {},
+  isLoading: false,
 });
 
 export function UIProvider({ children }: { children: React.ReactNode }) {
@@ -26,15 +29,21 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
   const [audioPlayer, setAudioPlayer] = useState<AudioPlayerType>({
     isPlaying: false,
     isShown: false,
-    src: '',
+    playlist: [],
     fileName: '',
   });
+  console.log('audioPlayer: ', audioPlayer);
 
   function toggleDrawer() {
     setDrawer(prevState => {
       return { ...prevState, isOpen: !prevState.isOpen };
     });
   }
+
+  const { data: userTracks, isLoading } = useQuery({
+    queryKey: ['audioEditorTracks'],
+    queryFn: () => getAudioEditorTracks({ isOwnTracks: false }),
+  });
 
   function togglePlay() {
     setAudioPlayer(previousState => ({ ...previousState, isPlaying: !previousState.isPlaying }));
@@ -44,8 +53,14 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
     setAudioPlayer(previousState => ({ ...previousState, isShown: !previousState.isShown }));
   }
 
-  function setSrc(src: string, fileName: string) {
-    setAudioPlayer(previousState => ({ ...previousState, src: src, fileName: fileName }));
+  function addToPlaylist(trackName: string) {
+    const track = userTracks?.find(track => track.name === trackName);
+    if (track) {
+      setAudioPlayer(previousState => ({
+        ...previousState,
+        playlist: [track],
+      }));
+    }
   }
 
   const showSnackbar = useCallback(({ message, status }: Omit<SnackbarType, 'isShown'>) => {
@@ -64,8 +79,9 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
         toggleDrawer,
         audioPlayer,
         togglePlay,
-        setSrc,
         toggleAudioPlayer,
+        addToPlaylist,
+        isLoading,
       }}
     >
       {children}

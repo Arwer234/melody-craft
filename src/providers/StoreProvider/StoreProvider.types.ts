@@ -23,11 +23,16 @@ export type StoreContextType = {
 };
 
 export type StoreSample = {
-  gain: Array<number>;
-  id: string;
   name: string;
   startTime: number;
+  src: string;
   volume: number;
+  gain: Array<number>;
+  id: string;
+};
+
+export type AudioEditorTrack = TrackDto & {
+  src: string;
 };
 
 export type TrackDto = {

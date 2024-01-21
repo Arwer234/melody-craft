@@ -15,6 +15,7 @@ import {
   where,
 } from 'firebase/firestore';
 import {
+  AudioEditorTrack,
   FileMetadata,
   PlaylistDto,
   StoreSample,
@@ -124,7 +125,11 @@ export async function getMusicFileSrc(fileName: string, fileType: FileType) {
   return url;
 }
 
-export async function getAudioEditorTracks({ isOwnTracks }: { isOwnTracks: boolean }) {
+export async function getAudioEditorTracks({
+  isOwnTracks,
+}: {
+  isOwnTracks: boolean;
+}): Promise<AudioEditorTrack[]> {
   const currentUserUid = auth.currentUser?.uid;
   let q;
   if (isOwnTracks) {
@@ -134,21 +139,7 @@ export async function getAudioEditorTracks({ isOwnTracks }: { isOwnTracks: boole
   }
 
   const querySnapshot = await getDocs(q);
-  const data: Array<{
-    id: string;
-    ownerUid: string;
-    name: string;
-    playlines: Array<
-      Array<{
-        name: string;
-        startTime: number;
-        src: string;
-        volume: number;
-        gain: Array<number>;
-        id: string;
-      }>
-    >;
-  }> = [];
+  const data: Array<AudioEditorTrack> = [];
   querySnapshot.forEach(doc => {
     const parsedDoc = { id: doc.id, ...doc.data() };
     parsedDoc.playlines = parsedDoc.playlines.map((playline: any) => {
@@ -314,7 +305,7 @@ export async function setTrack({
   const trackRef = doc(db, 'tracks', name);
 
   const parsedPlaylines = playlines.map(playline => {
-    const parsedPlayline: { [k: number]: StoreSample } = {};
+    const parsedPlayline: { [k: number]: Omit<StoreSample, 'src'> } = {};
     playline.forEach((sample, index) => {
       parsedPlayline[index] = {
         name: sample.name,
