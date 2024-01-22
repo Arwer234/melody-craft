@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import Equalizer from './Equalizer/Equalizer';
 import AudioTrack from './AudioTrack/AudioTrack';
 import { ACTIVE_STEPS, DEFAULT_SAMPLE_OPTIONS } from './AudioEditor.constants';
-import { Box, IconButton } from '@mui/material';
+import { Box, IconButton, useTheme } from '@mui/material';
 import AudioTimeline from './AudioTimeline/AudioTimeline';
 import Controls from '../Controls/Controls';
 import { AudioEditorProps, Sample } from './AudioEditor.types';
@@ -33,6 +33,7 @@ export default function AudioEditor({
   const [currentTime, setCurrentTime] = useState(0);
   const [seekTime, setSeekTime] = useState<number | null>(null);
   const [isPlayOnlyEditorShown, setIsPlayOnlyEditorShown] = useState(true);
+  const theme = useTheme();
 
   const { musicFilesMetadata, isMusicFilesMetadataLoaded } = useContext(StoreContext);
   const { showSnackbar } = useContext(UIContext);
@@ -210,6 +211,9 @@ export default function AudioEditor({
 
     const newSample = {
       ...DEFAULT_SAMPLE_OPTIONS,
+      progressColor: theme.palette.primary.main,
+      cursorColor: 'transparent',
+      waveColor: theme.palette.primary.main,
       id: `${file.name.split('.')[0]}_${Math.round(Math.random() * 100)}`,
       name: file.name,
       url: fileSrc,
@@ -291,6 +295,49 @@ export default function AudioEditor({
     }, 100);
     setIsPlaying(false);
   }, [trackName]);
+
+  if (isPlayOnlyMode && isPlayOnlyEditorShown) {
+    return (
+      <>
+        <Box sx={{ display: 'none' }}>
+          {playlines.map((samples, lineIndex) =>
+            samples.map((sample, sampleIndex) => (
+              <AudioTrack
+                isPlaying={
+                  isPlaying &&
+                  sample.state === 'playing' &&
+                  (sample.startTime ? sample.startTime * 1000 : 0) <= currentTime
+                }
+                key={`${sample.url}_${sampleIndex}`}
+                isSelected={selectedTrackId === sample.id}
+                options={sample}
+                onFinish={() => onSampleFinish(lineIndex, sampleIndex)}
+                onSeek={(time: number) => onSampleSeek(time)}
+                seekTime={seekTime}
+                filters={equalizers.find(item => item.id === sample.id)?.filters ?? []}
+                volume={volumes.find(item => item.id === sample.id)?.value ?? 100}
+                onDblClick={() => setSelectedTrackId(sample.id)}
+                onDragEnd={(time: number) => onActiveSampleDragEnd(time, lineIndex, sampleIndex)}
+                startTime={sample.startTime}
+                onRemove={() => onRemoveSample(lineIndex, sampleIndex)}
+                onAdd={(time: number) => onCopySample(time, sample.id)}
+              />
+            )),
+          )}
+        </Box>
+
+        <Controls
+          isPlaying={isPlaying}
+          onPlay={onPlayToggle}
+          onSkipNext={onSkipNext}
+          onSkipPrevious={onSkipPrevious}
+          onNextClick={isPlayOnlyMode ? undefined : handleNextClick}
+          isFixed={true}
+          trackName={trackName}
+        />
+      </>
+    );
+  }
 
   return (
     <Box width="100%" height="100%" padding={0}>
@@ -396,44 +443,6 @@ export default function AudioEditor({
               </Box>
             </Box>
           )}
-
-          {isPlayOnlyMode && isPlayOnlyEditorShown && (
-            <Box sx={{ display: 'none' }}>
-              {playlines.map((samples, lineIndex) => (
-                <Box key={`playline_${lineIndex}`}>
-                  <Box position="relative" height={128}>
-                    {samples.map((sample, sampleIndex) => {
-                      return (
-                        <AudioTrack
-                          isPlaying={
-                            isPlaying &&
-                            sample.state === 'playing' &&
-                            (sample.startTime ? sample.startTime * 1000 : 0) <= currentTime
-                          }
-                          key={`${sample.url}_${sampleIndex}`}
-                          isSelected={selectedTrackId === sample.id}
-                          options={sample}
-                          onFinish={() => onSampleFinish(lineIndex, sampleIndex)}
-                          onSeek={(time: number) => onSampleSeek(time)}
-                          seekTime={seekTime}
-                          filters={equalizers.find(item => item.id === sample.id)?.filters ?? []}
-                          volume={volumes.find(item => item.id === sample.id)?.value ?? 100}
-                          onDblClick={() => setSelectedTrackId(sample.id)}
-                          onDragEnd={(time: number) =>
-                            onActiveSampleDragEnd(time, lineIndex, sampleIndex)
-                          }
-                          startTime={sample.startTime}
-                          onRemove={() => onRemoveSample(lineIndex, sampleIndex)}
-                          onAdd={(time: number) => onCopySample(time, sample.id)}
-                        />
-                      );
-                    })}
-                  </Box>
-                </Box>
-              ))}
-            </Box>
-          )}
-
           <Controls
             isPlaying={isPlaying}
             onPlay={onPlayToggle}

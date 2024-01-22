@@ -5,6 +5,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   MenuItem,
   Select,
   SelectChangeEvent,
@@ -14,12 +15,18 @@ import { TrackListProps } from './TrackList.types';
 import TrackListItem from './TrackListItem/TrackListItem';
 import { queryClient } from '../../main';
 import { setPlaylist } from '../../providers/StoreProvider/StoreProvider.helpers';
-import { useContext, useState } from 'react';
+import { Fragment, useContext, useState } from 'react';
 import { UIContext } from '../../providers/UIProvider/UIProvider';
 import { useQuery } from '@tanstack/react-query';
 import { getAllUsers } from '../../providers/AuthProvider/AuthProvider.helpers';
 
-export default function TrackList({ tracks, isLoading, playlists }: TrackListProps) {
+export default function TrackList({
+  tracks,
+  isLoading,
+  playlists,
+  width,
+  onRemoveTrack,
+}: TrackListProps) {
   const [trackNameToAdd, setTrackNameToAdd] = useState<string | null>(null);
   const [isAddToPlaylistDialogOpen, setIsAddToPlaylistDialogOpen] = useState(false);
   const [playlistTitle, setPlaylistTitle] = useState('');
@@ -31,6 +38,8 @@ export default function TrackList({ tracks, isLoading, playlists }: TrackListPro
     isLoading: isAudioEditorTracksLoading,
   } = useContext(UIContext);
   const { data: users } = useQuery({ queryKey: ['users'], queryFn: getAllUsers });
+
+  const visibleTracks = tracks?.filter(track => track.visibility === 'public');
 
   function handleAddToPlaylistClick({ trackName }: { trackName: string }) {
     if (playlists && playlists.length > 0) {
@@ -62,10 +71,6 @@ export default function TrackList({ tracks, isLoading, playlists }: TrackListPro
     if (audioPlayer.playlist.length === 0 || audioPlayer.playlist[0].name !== trackName)
       addToPlaylist(trackName);
     if (!audioPlayer.isShown) toggleAudioPlayer();
-    console.log();
-    if (audioPlayer.isPlaying) {
-      console.log('should stop');
-    }
   }
 
   return (
@@ -87,22 +92,26 @@ export default function TrackList({ tracks, isLoading, playlists }: TrackListPro
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsAddToPlaylistDialogOpen(false)}>Cancel</Button>
-          <Button onClick={() => handleAddToPlaylistConfirm()}>Add</Button>
+          <Button variant="contained" onClick={() => handleAddToPlaylistConfirm()}>
+            Add
+          </Button>
         </DialogActions>
       </Dialog>
-      <Box display="flex" gap={1} flexDirection="column">
-        {tracks?.map(item =>
-          item.visibility === 'public' ? (
+      <Box display="flex" gap={1} flexDirection="column" width={width}>
+        {visibleTracks?.map((item, index) => (
+          <Fragment key={item.name}>
             <TrackListItem
               user={users?.find(user => user.uid === item.ownerUid)}
               onAddToPlaylist={handleAddToPlaylistClick}
               onPlay={handlePlayClick}
               {...item}
-              key={item.name}
               isLoading={isAudioEditorTracksLoading}
+              onRemoveFromPlaylist={onRemoveTrack ? () => onRemoveTrack(item.name) : undefined}
             />
-          ) : null,
-        )}
+            {index !== tracks.length - 1 && <Divider />}{' '}
+            {/* Don't render a divider after the last item */}
+          </Fragment>
+        ))}
       </Box>
     </>
   );

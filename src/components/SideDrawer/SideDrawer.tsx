@@ -37,7 +37,14 @@ export default function SideDrawer({ width }: Props) {
       open={drawer.isOpen}
     >
       <Toolbar />
-      <Box sx={{ overflow: 'auto' }}>
+      <Box
+        sx={{
+          overflow: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+        }}
+      >
         <List>
           {DRAWER_STATIC_CONFIG.map(item => (
             <ListItem key={item.name} disablePadding>
@@ -48,17 +55,20 @@ export default function SideDrawer({ width }: Props) {
             </ListItem>
           ))}
         </List>
-        <Divider />
-        <List>
-          {DRAWER_PERSONAL_CONFIG.map(item => (
-            <ListItem key={item.name} disablePadding>
-              <ListItemButton onClick={() => handleListItemClick(item.path)}>
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+
+        <Box>
+          <Divider />
+          <List>
+            {DRAWER_PERSONAL_CONFIG.map(item => (
+              <ListItem key={item.name} disablePadding>
+                <ListItemButton onClick={() => handleListItemClick(item.path)}>
+                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  <ListItemText primary={item.name} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Box>
       </Box>
     </Drawer>
   );

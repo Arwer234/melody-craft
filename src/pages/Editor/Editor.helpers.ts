@@ -7,9 +7,11 @@ import { audioContext } from './Editor.constants';
 export function userTracksToAudioEditorTrack({
   userTracks,
   trackId,
+  color,
 }: {
   userTracks: Array<AudioEditorTrack>;
   trackId: string;
+  color: string;
 }) {
   const selectedPlaylines = userTracks?.find(track => track.name === trackId)?.playlines;
   if (selectedPlaylines !== undefined) {
@@ -18,6 +20,9 @@ export function userTracksToAudioEditorTrack({
         name: sample.name,
         url: sample.src,
         ...DEFAULT_SAMPLE_OPTIONS,
+        waveColor: color,
+        progressColor: color,
+        cursorColor: 'transparent',
         container: `wavesurfer_${sample.id}`,
         startTime: sample.startTime,
         id: sample.id,

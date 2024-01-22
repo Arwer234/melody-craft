@@ -11,6 +11,7 @@ import {
   Step,
   StepLabel,
   Stepper,
+  useTheme,
 } from '@mui/material';
 import AudioEditor from '../../components/AudioEditor/AudioEditor';
 import { useContext, useEffect, useState } from 'react';
@@ -40,6 +41,7 @@ export default function Editor({ playingTrackName }: { playingTrackName?: string
   const [equalizers, setEqualizers] = useState<Array<EqualizerType>>([]);
   const [playlines, setPlaylines] = useState<Array<Array<Sample>>>([]);
   const { userInfo } = useAuth();
+  const theme = useTheme();
 
   const location = useLocation();
   const existingTrackName =
@@ -68,6 +70,7 @@ export default function Editor({ playingTrackName }: { playingTrackName?: string
       const audioEditorTrack = userTracksToAudioEditorTrack({
         userTracks: filteredUserTracks ?? [],
         trackId: trackId ?? '',
+        color: theme.palette.primary.main,
       });
 
       if (audioEditorTrack) {
@@ -114,7 +117,6 @@ export default function Editor({ playingTrackName }: { playingTrackName?: string
 
   const isPlayOnlyMode = Boolean(playingTrackName);
 
-  // TODO: Layout shift bug when going from player in Discover into Editor
   useEffect(() => {
     if (existingTrackName && activeStep === ACTIVE_STEPS.CREATE && userTracks) {
       setSelectedExistingTrackId(existingTrackName);

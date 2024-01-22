@@ -1,4 +1,4 @@
-import { Box, IconButton, Paper, Typography } from '@mui/material';
+import { Box, IconButton, Typography, useTheme } from '@mui/material';
 import { MusicTileProps } from './MusicTile.types';
 import { Add, DeleteForever, PlayArrow } from '@mui/icons-material';
 import React, { useEffect, useRef, useState } from 'react';
@@ -8,15 +8,9 @@ import { getMusicFileSrc } from '../../../providers/StoreProvider/StoreProvider.
 import TagList from '../../../components/TagList/TagList';
 import { FileType } from '../MyFiles.types';
 
-export default function MusicTile({
-  onRemove,
-  onPlay,
-  onDrag,
-  onAdd,
-  sample,
-  track,
-}: MusicTileProps) {
+export default function MusicTile({ onRemove, onDrag, onAdd, sample, track }: MusicTileProps) {
   const [isClicked, setIsClicked] = useState(false);
+  const theme = useTheme();
   const wavesurferRef = useRef<WaveSurfer | null>(null);
   const [fileName, fileExtension] = sample
     ? sample.name.split('.')
@@ -46,8 +40,8 @@ export default function MusicTile({
     wavesurferRef.current = WaveSurfer.create({
       container: container,
       url: src,
-      waveColor: '#00b0ff',
-      progressColor: '#00b0ff',
+      waveColor: theme.palette.secondary.main,
+      progressColor: theme.palette.secondary.main,
       barWidth: 3,
       barGap: 2,
       barRadius: 2,
@@ -62,7 +56,7 @@ export default function MusicTile({
   }, [containerId, isClicked, src]);
 
   return (
-    <Paper
+    <Box
       sx={{ width: '100%' }}
       onDragEnd={
         onDrag
@@ -83,11 +77,9 @@ export default function MusicTile({
         <Box id={containerId} width="100%" minHeight={128} />
         {sample !== undefined && (
           <Box display="flex" alignItems="center">
-            {onPlay && (
-              <IconButton onClick={handlePlayClick} color="secondary">
-                <PlayArrow fontSize="inherit" />
-              </IconButton>
-            )}
+            <IconButton onClick={handlePlayClick} color="primary">
+              <PlayArrow fontSize="inherit" />
+            </IconButton>
 
             {onRemove && (
               <IconButton onClick={() => onRemove(sample.name)}>
@@ -106,6 +98,6 @@ export default function MusicTile({
           </Box>
         )}
       </Box>
-    </Paper>
+    </Box>
   );
 }

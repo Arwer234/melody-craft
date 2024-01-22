@@ -32,7 +32,6 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
     playlist: [],
     fileName: '',
   });
-  console.log('audioPlayer: ', audioPlayer);
 
   function toggleDrawer() {
     setDrawer(prevState => {

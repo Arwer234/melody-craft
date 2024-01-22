@@ -1,16 +1,15 @@
 import Box from '@mui/material/Box';
 import { PlaylistListItemProps } from './PlaylistListItem.types';
-import { Typography } from '@mui/material';
+import { IconButton, Typography } from '@mui/material';
+import { Delete } from '@mui/icons-material';
 
-export default function PlaylistListItem({ tracks, name }: PlaylistListItemProps) {
+export default function PlaylistListItem({ name, onRemove }: PlaylistListItemProps) {
   return (
-    <Box>
+    <Box display="flex" alignItems="center" gap={1}>
       <Typography variant="h6">{name}</Typography>
-      {tracks.map((track, key) => (
-        <Typography ml={1} key={`${track.name} ${name} ${key}`}>
-          {track.name}
-        </Typography>
-      ))}
+      <IconButton onClick={onRemove}>
+        <Delete />
+      </IconButton>
     </Box>
   );
 }

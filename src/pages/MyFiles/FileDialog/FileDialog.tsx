@@ -57,7 +57,7 @@ export default function FileDialog({
       </DialogContent>
       <DialogActions>
         <Box display="flex" gap={1} justifyContent="center" width="100%" padding={1}>
-          <Button onClick={handleCancelClick} variant="outlined">
+          <Button onClick={handleCancelClick} variant="text">
             Cancel
           </Button>
           <Button onClick={handleUploadClick} variant="contained" component="span">

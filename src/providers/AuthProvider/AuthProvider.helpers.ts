@@ -9,9 +9,9 @@ import {
 } from 'firebase/auth';
 import { AUTH_STATUSES } from './AuthProvider.constants';
 import { firebaseApp } from '../../firebase';
-import { collection, doc, getDoc, getDocs, query, setDoc } from 'firebase/firestore';
+import { Timestamp, collection, doc, getDoc, getDocs, query, setDoc } from 'firebase/firestore';
 import { db } from '../StoreProvider/StoreProvider.helpers';
-import { FirestoreUserExtended } from './AuthProvider.types';
+import { FirestoreUser, FirestoreUserExtended } from './AuthProvider.types';
 
 export const auth = getAuth(firebaseApp);
 
@@ -33,10 +33,15 @@ export async function createUserUsingEmailAndPassword({
         throw new Error('No current user!');
       }
 
-      await setDoc(doc(db, 'users', auth.currentUser.uid), {
+      const newUser = {
         displayName: username,
         identifier: auth.currentUser?.email,
-      });
+        signUpDate: Timestamp.fromDate(new Date()),
+        imagePath: null,
+        description: null,
+      } as FirestoreUser;
+
+      await setDoc(doc(db, 'users', auth.currentUser.uid), newUser);
     })
     .then(() => {
       return { status: AUTH_STATUSES.SIGNED_UP, message: 'You account has been created!' };

@@ -3,4 +3,6 @@ import { PlaylistExtendedDto } from '../../providers/StoreProvider/StoreProvider
 export type PlaylistListProps = {
   playlists: Array<PlaylistExtendedDto>;
   isLoading?: boolean;
+  onRemovePlaylist: (playlistName: string) => void;
+  onRemoveTrack: (playlistName: string, trackName: string) => void;
 };

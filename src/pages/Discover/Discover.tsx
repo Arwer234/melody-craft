@@ -11,6 +11,7 @@ import {
 import { useContext, useState } from 'react';
 import TrackList from '../../components/TrackList/TrackList';
 import { AuthContext } from '../../providers/AuthProvider/AuthProvider';
+import AudioPlayer from '../../components/AudioPlayer/AudioPlayer';
 
 export default function Discover() {
   const {
@@ -59,16 +60,19 @@ export default function Discover() {
       : tracksByName;
 
   return (
-    <Box margin={2} display="flex" flexDirection="column" gap={2}>
-      <Typography variant="h4">Discover</Typography>
-      <SearchBar
-        tags={tags ?? []}
-        searchValue={value}
-        onSearchValueChange={setSearchValue}
-        onTagClick={handleTagClick}
-        selectedTags={selectedTags}
-      />
-      <TrackList playlists={playlists ?? []} tracks={tracksByTags ?? []} isLoading={isLoading} />
-    </Box>
+    <>
+      <Box margin={2} display="flex" flexDirection="column" gap={2}>
+        <Typography variant="h4">Discover</Typography>
+        <SearchBar
+          tags={tags ?? []}
+          searchValue={value}
+          onSearchValueChange={setSearchValue}
+          onTagClick={handleTagClick}
+          selectedTags={selectedTags}
+        />
+        <TrackList playlists={playlists ?? []} tracks={tracksByTags ?? []} isLoading={isLoading} />
+      </Box>
+      <AudioPlayer />
+    </>
   );
 }

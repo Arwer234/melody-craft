@@ -8,6 +8,7 @@ export type TrackListItemCustomProps = {
   onPlay: ({ trackName }: { trackName: string }) => void;
   user?: FirestoreUserExtended;
   isLoading?: boolean;
+  onRemoveFromPlaylist?: () => void;
 };
 
 export type TrackListItemProps = TrackExtendedDto & TrackListItemCustomProps;

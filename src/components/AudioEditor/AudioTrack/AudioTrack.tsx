@@ -26,6 +26,7 @@ export default function AudioTrack({
   const wavesurferRef = useRef<WaveSurfer | null>(null);
 
   const theme = useTheme();
+  console.log('theme: ', theme.palette.secondary.main);
 
   function handleSeeked() {
     if (audioRef && audioRef.current && audioRef.current.currentTime > 0 && onSeek) {
@@ -52,8 +53,8 @@ export default function AudioTrack({
       container: `#${options.container as string}`,
       media: audio,
       width: (audio.duration * TIMELINE_TILE_DURATION) / 10,
-      waveColor: isSelected ? '#00b0ff' : '#ccc',
-      progressColor: isSelected ? '#00b0ff' : '#ccc',
+      waveColor: isSelected ? theme.palette.secondary.main : '#ccc',
+      progressColor: isSelected ? theme.palette.secondary.main : '#ccc',
       barWidth: 3,
       barGap: 2,
       barRadius: 2,

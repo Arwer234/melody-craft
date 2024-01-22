@@ -8,4 +8,6 @@ export type TrackListProps = {
   isLoading?: boolean;
   playlists: Array<PlaylistExtendedDto>;
   ownerUid?: string;
+  width?: string | number;
+  onRemoveTrack?: (trackName: string) => void;
 };

@@ -60,5 +60,5 @@ export type PlaylistDto = {
 };
 
 export type PlaylistExtendedDto = PlaylistDto & {
-  tracks: Array<TrackDto>;
+  tracks: Array<TrackExtendedDto>;
 };

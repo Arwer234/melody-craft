@@ -18,6 +18,7 @@ import {
   AudioEditorTrack,
   FileMetadata,
   PlaylistDto,
+  PlaylistExtendedDto,
   StoreSample,
   StoredFile,
   TrackDto,
@@ -40,6 +41,7 @@ import { EXISTING_TRACK_OPTIONS, PUBLISH_VISIBILITY } from '../../pages/Publish/
 import { SNACKBAR_STATUS } from '../../hooks/useSnackbar/useSnackbar.constants';
 import { NOTIFICATION_TYPES } from '../../components/NavigationBar/NotificationMenu/NotificationMenu.constants';
 import { NotificationDto } from '../../components/NavigationBar/NotificationMenu/NotificationMenu.types';
+import { FirestoreUserExtended } from '../AuthProvider/AuthProvider.types';
 
 export const db = getFirestore(firebaseApp);
 export const storage = getStorage(firebaseApp);
@@ -421,6 +423,26 @@ export async function setPlaylist({ name, trackNames }: Pick<PlaylistDto, 'name'
   };
 }
 
+export async function deletePlaylist({ name }: Pick<PlaylistDto, 'name'>) {
+  const playlistRef = doc(db, 'playlists', name);
+  await deleteDoc(playlistRef);
+
+  return {
+    status: SNACKBAR_STATUS.SUCCESS,
+    message: 'Playlist successfully deleted!',
+  };
+}
+
+export async function deleteTrack({ name }: Pick<TrackDto, 'name'>) {
+  const trackRef = doc(db, 'tracks', name);
+  await deleteDoc(trackRef);
+
+  return {
+    status: SNACKBAR_STATUS.SUCCESS,
+    message: 'Track successfully deleted!',
+  };
+}
+
 export async function getPlaylists({ name, ownerUid }: { name?: string; ownerUid?: string }) {
   const col = collection(db, 'playlists');
   let q;
@@ -456,5 +478,74 @@ export async function getPlaylists({ name, ownerUid }: { name?: string; ownerUid
     }),
   );
 
-  return extendedData;
+  return extendedData as Array<PlaylistExtendedDto>;
+}
+
+export async function getFirestoreUser({ uid }: { uid: string }) {
+  const docRef = doc(db, 'users', uid);
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists()) {
+    const user = { uid: docSnap.id, ...docSnap.data() } as FirestoreUserExtended;
+
+    if (!user.imagePath) return user;
+
+    const imagePath = await getImagePath(user.imagePath);
+    user.imagePath = imagePath;
+
+    return user;
+  } else {
+    return null;
+  }
+}
+
+export async function setFirestoreUserDescription({
+  uid,
+  description,
+}: {
+  description: string;
+  uid?: string;
+}) {
+  const resolvedUid = uid ?? auth.currentUser?.uid;
+
+  if (!resolvedUid) return { status: SNACKBAR_STATUS.ERROR, message: 'No user id provided!' };
+
+  const userRef = doc(db, 'users', resolvedUid);
+  await updateDoc(userRef, { description });
+
+  return {
+    status: SNACKBAR_STATUS.SUCCESS,
+    message: 'Description successfully saved!',
+  };
+}
+
+export async function setFirestoreUserImage({
+  uid,
+  file,
+}: {
+  file: File;
+  uid?: string;
+}): Promise<{ status: (typeof SNACKBAR_STATUS)[keyof typeof SNACKBAR_STATUS]; message: string }> {
+  const resolvedUid = uid ?? auth.currentUser?.uid;
+
+  if (!resolvedUid) return { status: SNACKBAR_STATUS.ERROR, message: 'No user id provided!' };
+
+  const storageRef = ref(storage, `images/${file.name}`);
+  try {
+    await getDownloadURL(storageRef);
+    return {
+      status: SNACKBAR_STATUS.ERROR,
+      message: STORE_ERRORS.FILE_EXISTS,
+    };
+  } catch {
+    await uploadBytes(storageRef, file);
+  }
+
+  const userRef = doc(db, 'users', resolvedUid);
+  await updateDoc(userRef, { imagePath: file.name });
+
+  return {
+    status: SNACKBAR_STATUS.SUCCESS,
+    message: 'Image successfully saved!',
+  };
 }

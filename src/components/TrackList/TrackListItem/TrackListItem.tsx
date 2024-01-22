@@ -1,7 +1,7 @@
-import { Paper, Box, Typography, IconButton, Link } from '@mui/material';
+import { Box, Typography, IconButton, Link } from '@mui/material';
 import { TrackListItemProps } from './TrackListItem.types';
 import TagList from '../../TagList/TagList';
-import { Add, Edit, PlayArrow } from '@mui/icons-material';
+import { Add, Edit, PlayArrow, Remove } from '@mui/icons-material';
 import { ROUTE_PATHS } from '../../../routes';
 import placeholderImageUrl from '../../../assets/images/placeholder_track_cover.png';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +16,7 @@ export default function TrackListItem({
   onPlay,
   user,
   isLoading,
+  onRemoveFromPlaylist,
 }: TrackListItemProps) {
   const navigate = useNavigate();
 
@@ -25,8 +26,15 @@ export default function TrackListItem({
     navigate(`${ROUTE_PATHS.EDITOR}?trackName=${name}`);
   }
   return (
-    <Paper>
-      <Box display="flex" padding={2} justifyContent="space-around">
+    <Box>
+      <Box display="flex" padding={2} justifyContent="space-around" gap={3}>
+        {onRemoveFromPlaylist && (
+          <Box display="flex" alignItems="center">
+            <IconButton onClick={() => onRemoveFromPlaylist()}>
+              <Remove />
+            </IconButton>
+          </Box>
+        )}
         <Box flex={1} display="flex" gap={2}>
           <img
             width={128}
@@ -50,11 +58,11 @@ export default function TrackListItem({
               {isLoading && <Spinner />}
               {!isLoading && (
                 <IconButton onClick={() => onPlay({ trackName: name })}>
-                  <PlayArrow color="secondary" fontSize="inherit" />
+                  <PlayArrow color="primary" fontSize="inherit" />
                 </IconButton>
               )}
               <IconButton onClick={() => onAddToPlaylist({ trackName: name })}>
-                <Add fontSize="inherit" />
+                <Add color="secondary" fontSize="inherit" />
               </IconButton>
               <IconButton onClick={() => handleEditClick()}>
                 <Edit fontSize="inherit" />
@@ -68,6 +76,6 @@ export default function TrackListItem({
           <TagList tags={tags} />
         </Box>
       </Box>
-    </Paper>
+    </Box>
   );
 }
