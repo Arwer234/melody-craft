@@ -9,8 +9,8 @@ export default function Equalizer({
   onFilterChange: (newFilters: Array<BiquadFilterNode>) => void;
 }) {
   return (
-    <Paper>
-      <Box display="flex" gap={2} justifyContent="space-around" padding={2} flexWrap="wrap">
+    <Paper sx={{ height: ['100%', 'calc(100% - 84px)'] }}>
+      <Box height="100%" display="flex" gap={2} justifyContent="space-around" padding={2}>
         {filters.map((filter, key) => {
           return (
             <Box
@@ -19,7 +19,7 @@ export default function Equalizer({
               flexDirection="column"
               alignItems="center"
               gap={2}
-              height={140}
+              height={['430px', '100%']}
             >
               <Slider
                 orientation="vertical"

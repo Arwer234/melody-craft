@@ -5,7 +5,7 @@ export type AudioTrackProps = {
   options: WaveSurferOptions;
   onFinish: () => void;
   onSeek?: (time: number) => void;
-  onDblClick?: () => void;
+  onClick?: () => void;
   onDragEnd?: (time: number) => void;
   onRemove?: () => void;
   onAdd?: (time: number) => void;

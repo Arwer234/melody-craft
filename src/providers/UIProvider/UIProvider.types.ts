@@ -28,4 +28,5 @@ export type UIContextType = {
   audioPlayer: AudioPlayerType;
   addToPlaylist: (trackName: string) => void;
   isLoading: boolean;
+  isMobile: boolean;
 };

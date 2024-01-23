@@ -9,4 +9,5 @@ export type MusicTileProps = {
   src?: string;
   sample?: Omit<FileMetadata, 'ownerUid'>;
   track?: TrackDto;
+  variant?: 'default' | 'dense';
 };

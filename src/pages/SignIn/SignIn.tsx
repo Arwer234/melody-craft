@@ -23,7 +23,7 @@ export function SignIn() {
       status: result.status === 'signed_in' ? SNACKBAR_STATUS.SUCCESS : SNACKBAR_STATUS.ERROR,
     });
 
-    navigate(ROUTE_PATHS.HOME);
+    navigate(ROUTE_PATHS.DISCOVER);
   }
   return (
     <Box display="flex" justifyContent="center" height="100%" alignItems="center">

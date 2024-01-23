@@ -8,7 +8,14 @@ import { getMusicFileSrc } from '../../../providers/StoreProvider/StoreProvider.
 import TagList from '../../../components/TagList/TagList';
 import { FileType } from '../MyFiles.types';
 
-export default function MusicTile({ onRemove, onDrag, onAdd, sample, track }: MusicTileProps) {
+export default function MusicTile({
+  onRemove,
+  onDrag,
+  onAdd,
+  sample,
+  track,
+  variant,
+}: MusicTileProps) {
   const [isClicked, setIsClicked] = useState(false);
   const theme = useTheme();
   const wavesurferRef = useRef<WaveSurfer | null>(null);
@@ -39,6 +46,7 @@ export default function MusicTile({ onRemove, onDrag, onAdd, sample, track }: Mu
 
     wavesurferRef.current = WaveSurfer.create({
       container: container,
+      height: 64,
       url: src,
       waveColor: theme.palette.secondary.main,
       progressColor: theme.palette.secondary.main,
@@ -57,7 +65,7 @@ export default function MusicTile({ onRemove, onDrag, onAdd, sample, track }: Mu
 
   return (
     <Box
-      sx={{ width: '100%' }}
+      sx={{ width: '100%', cursor: onDrag ? 'grab' : 'default' }}
       onDragEnd={
         onDrag
           ? (event: React.DragEvent<HTMLDivElement>) =>
@@ -66,15 +74,15 @@ export default function MusicTile({ onRemove, onDrag, onAdd, sample, track }: Mu
       }
       draggable={onDrag ? true : false}
     >
-      <Box display="flex" width="100%">
-        <Box padding={2} display="flex" minWidth={200}>
-          <Box display="flex" justifyContent="space-between" flexDirection="column" width="100%">
+      <Box padding={variant === 'default' ? 2 : 0} display="flex" width="100%">
+        <Box display="flex" minWidth={200}>
+          <Box display="flex" gap={2} flexDirection="column" width="100%">
             <Typography variant="h5">{fileName}</Typography>
             {sample !== undefined && <Typography>format: {fileExtension}</Typography>}
             {track !== undefined && <TagList tags={track.tags} />}
           </Box>
         </Box>
-        <Box id={containerId} width="100%" minHeight={128} />
+        <Box id={containerId} width="100%" height={64} />
         {sample !== undefined && (
           <Box display="flex" alignItems="center">
             <IconButton onClick={handlePlayClick} color="primary">

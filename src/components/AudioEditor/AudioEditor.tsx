@@ -196,7 +196,7 @@ export default function AudioEditor({
       setSelectedTrackId(playlines.find(line => line.length > 0)?.[0].id ?? null);
   }
 
-  async function onSamplePickerItemDrag(_event: React.DragEvent<HTMLDivElement>, fileName: string) {
+  async function onSamplePickerItemDrag(event: React.DragEvent<HTMLDivElement>, fileName: string) {
     if (playlines.some(line => line.some(sample => sample.name === fileName))) {
       showSnackbar({
         message: 'This sample is already added, try copying the existing one',
@@ -316,7 +316,7 @@ export default function AudioEditor({
                 seekTime={seekTime}
                 filters={equalizers.find(item => item.id === sample.id)?.filters ?? []}
                 volume={volumes.find(item => item.id === sample.id)?.value ?? 100}
-                onDblClick={() => setSelectedTrackId(sample.id)}
+                onClick={() => setSelectedTrackId(sample.id)}
                 onDragEnd={(time: number) => onActiveSampleDragEnd(time, lineIndex, sampleIndex)}
                 startTime={sample.startTime}
                 onRemove={() => onRemoveSample(lineIndex, sampleIndex)}
@@ -348,19 +348,24 @@ export default function AudioEditor({
           flexDirection="column"
           justifyContent="space-between"
           width="100%"
-          minHeight="100%"
+          height="100%"
           gap={2}
         >
           {!isPlayOnlyMode && (
             <Box height="100%" display="flex" flexDirection="column" gap={2} padding={2}>
               <Box
                 position="relative"
-                sx={{ overflowX: 'scroll', overflowY: 'hidden', minHeight: 480 }}
+                sx={{ overflowX: 'scroll', overflowY: 'hidden', minHeight: 600 }}
+                onDragOver={(event: React.DragEvent<HTMLDivElement>) => event.preventDefault()}
               >
                 {
                   // TODO: add duration based on tracks
                 }
-                <AudioTimeline currentTime={currentTime} duration={238000} />
+                <AudioTimeline
+                  onClick={(time: number) => onSampleSeek(time)}
+                  currentTime={currentTime}
+                  duration={238000}
+                />
                 <Box display="flex" flexDirection="column" gap={1}>
                   {playlines.map((samples, lineIndex) => (
                     <Box
@@ -411,7 +416,7 @@ export default function AudioEditor({
                                 equalizers.find(item => item.id === sample.id)?.filters ?? []
                               }
                               volume={volumes.find(item => item.id === sample.id)?.value ?? 100}
-                              onDblClick={() => setSelectedTrackId(sample.id)}
+                              onClick={() => setSelectedTrackId(sample.id)}
                               onDragEnd={(time: number) =>
                                 onActiveSampleDragEnd(time, lineIndex, sampleIndex)
                               }
@@ -426,14 +431,14 @@ export default function AudioEditor({
                   ))}
                 </Box>
               </Box>
-              <Box display="flex" flexDirection={['column', 'row']} gap={2}>
+              <Box height="100%" display="flex" flexDirection={['column', 'row']} gap={2}>
                 <Box flex={2}>
                   <Equalizer
                     filters={equalizers.find(item => item.id === selectedTrackId)?.filters ?? []}
                     onFilterChange={onFilterChange}
                   />
                 </Box>
-                <Box flex={1}>
+                <Box height="100%" flex={1}>
                   <SamplePicker
                     sampleData={musicFilesMetadata}
                     isMusicFilesMetadataLoaded={isMusicFilesMetadataLoaded}

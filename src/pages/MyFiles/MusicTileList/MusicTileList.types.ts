@@ -11,4 +11,5 @@ export type MusicTileListProps = {
   tracksData?: Array<TrackDto>;
   samplesData?: Array<FileMetadata>;
   onAdd?: (name: string) => void;
+  variant?: 'default' | 'dense';
 };

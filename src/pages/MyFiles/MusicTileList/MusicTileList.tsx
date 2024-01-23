@@ -14,6 +14,7 @@ export default function MusicTileList({
   onRemove,
   onPlay,
   onAdd,
+  variant = 'default',
 }: MusicTileListProps) {
   if (!isLoaded) {
     return <EmptyView description="There are no files yet!" />;
@@ -40,7 +41,13 @@ export default function MusicTileList({
         samplesData?.map((sample, index) => (
           <Fragment key={`${fileType} ${sample.name}`}>
             <Box flexBasis={`${100 / columns}%`}>
-              <MusicTile onPlay={onPlay} onRemove={onRemove} onDrag={onDrag} sample={sample} />
+              <MusicTile
+                variant={variant}
+                onPlay={onPlay}
+                onRemove={onRemove}
+                onDrag={onDrag}
+                sample={sample}
+              />
             </Box>
             {index !== samplesData.length - 1 && <Divider />}{' '}
             {/* Don't render a divider after the last item */}

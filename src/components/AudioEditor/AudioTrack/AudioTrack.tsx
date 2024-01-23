@@ -12,8 +12,7 @@ export default function AudioTrack({
   startTime = 0,
   seekTime,
   onFinish,
-  onSeek,
-  onDblClick,
+  onClick,
   onDragEnd,
   onRemove,
   onAdd,
@@ -26,13 +25,6 @@ export default function AudioTrack({
   const wavesurferRef = useRef<WaveSurfer | null>(null);
 
   const theme = useTheme();
-  console.log('theme: ', theme.palette.secondary.main);
-
-  function handleSeeked() {
-    if (audioRef && audioRef.current && audioRef.current.currentTime > 0 && onSeek) {
-      onSeek((audioRef.current.currentTime + startTime) * 1000);
-    }
-  }
 
   function handleCanPlay() {
     const mediaNode = audioContext.createMediaElementSource(audioRef.current!);
@@ -43,7 +35,6 @@ export default function AudioTrack({
       return curr;
     }, mediaNode);
 
-    // Connect the filters to the audio output
     equalizer.connect(audioContext.destination);
   }
 
@@ -58,9 +49,8 @@ export default function AudioTrack({
       barWidth: 3,
       barGap: 2,
       barRadius: 2,
+      interact: false,
     });
-
-    if (onDblClick) wavesurferRef.current?.on('dblclick', onDblClick);
 
     if (audioRef.current) {
       audioRef.current.addEventListener('canplay', handleCanPlay, { once: true });
@@ -113,7 +103,7 @@ export default function AudioTrack({
       }
       if (audioRef.current) {
         audioRef.current.removeEventListener('ended', onFinish);
-        audioRef.current.removeEventListener('seeking', handleSeeked);
+        // audioRef.current.removeEventListener('seeking', handleSeeked);
         audioRef.current.removeEventListener('canplay', handleCanPlay);
         audioRef.current.removeEventListener('loadedmetadata', () =>
           handleLoadedMetadata(audioRef.current as HTMLAudioElement),
@@ -129,10 +119,12 @@ export default function AudioTrack({
     }
   }, [volume]);
 
-  // TODO: change color to match theme
   useEffect(() => {
     if (isSelected && wavesurferRef.current) {
-      wavesurferRef.current?.setOptions({ waveColor: '#00b0ff', progressColor: '#00b0ff' });
+      wavesurferRef.current?.setOptions({
+        waveColor: theme.palette.secondary.main,
+        progressColor: theme.palette.secondary.main,
+      });
     } else if (wavesurferRef.current) {
       wavesurferRef.current?.setOptions({ waveColor: '#ccc', progressColor: '#ccc' });
     }
@@ -158,14 +150,6 @@ export default function AudioTrack({
     }
   }, [seekTime, startTime]);
 
-  useEffect(() => {
-    if (audioRef && audioRef.current) audioRef.current.addEventListener('seeking', handleSeeked);
-    return () => {
-      if (audioRef && audioRef.current)
-        audioRef.current.removeEventListener('seeking', handleSeeked);
-    };
-  }, [startTime]);
-
   return (
     <Box
       width={audioRef.current ? (audioRef.current?.duration * TIMELINE_TILE_DURATION) / 10 : 0}
@@ -177,6 +161,7 @@ export default function AudioTrack({
         transition: 'background-color 0.3s, opacity 0.3s',
       }}
       position="relative"
+      onClick={onClick}
     >
       <Box
         width={audioRef.current ? (audioRef.current?.duration * TIMELINE_TILE_DURATION) / 10 : 0}

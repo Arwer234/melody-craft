@@ -2,6 +2,7 @@ import React, { createContext, useState, useCallback } from 'react';
 import { AudioPlayerType, DrawerType, SnackbarType, UIContextType } from './UIProvider.types';
 import { useQuery } from '@tanstack/react-query';
 import { getAudioEditorTracks } from '../StoreProvider/StoreProvider.helpers';
+import { useMediaQuery, useTheme } from '@mui/material';
 
 const SNACKBAR_TIMEOUT = 5000;
 
@@ -15,6 +16,7 @@ export const UIContext = createContext<UIContextType>({
   toggleAudioPlayer: () => {},
   addToPlaylist: () => {},
   isLoading: false,
+  isMobile: false,
 });
 
 export function UIProvider({ children }: { children: React.ReactNode }) {
@@ -32,6 +34,9 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
     playlist: [],
     fileName: '',
   });
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.up('sm'));
 
   function toggleDrawer() {
     setDrawer(prevState => {
@@ -81,6 +86,7 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
         toggleAudioPlayer,
         addToPlaylist,
         isLoading,
+        isMobile,
       }}
     >
       {children}

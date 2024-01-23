@@ -2,12 +2,21 @@ import { Box, Typography } from '@mui/material';
 import { TIMELINE_TILE_DURATION } from './AudioTimeline.constants';
 import { AudioTimelineProps } from './AudioTimeline.types';
 
-export default function AudioTimeline({ duration, currentTime }: AudioTimelineProps) {
+export default function AudioTimeline({ duration, currentTime, onClick }: AudioTimelineProps) {
   const notchesCount = duration / TIMELINE_TILE_DURATION;
   const caretPosition = (currentTime / duration) * 100;
+
+  function handleClick(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    const box = event.currentTarget.getBoundingClientRect();
+    const clickPosition = event.clientX - box.left;
+    const clickPositionRatio = clickPosition / box.width;
+    const clickedTime = clickPositionRatio * duration;
+
+    onClick(clickedTime);
+  }
   return (
-    <Box position="absolute" height="100%" zIndex={-1} left={80}>
-      <Box display="flex" height="100%">
+    <Box position="absolute" height="100%" left={80} onClick={handleClick}>
+      <Box display="flex" height="100%" zIndex={-1}>
         {Array.from(Array(notchesCount).keys()).map((_, index) => (
           <Box
             key={index}
@@ -36,7 +45,7 @@ export default function AudioTimeline({ duration, currentTime }: AudioTimelinePr
         width="2px"
         bgcolor="primary.main"
         sx={{
-          transition: 'left 0.1s ease-out',
+          transition: 'left 0.1s linear',
         }}
       />
     </Box>
