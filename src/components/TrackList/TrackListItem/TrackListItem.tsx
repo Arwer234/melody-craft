@@ -1,11 +1,12 @@
-import { Box, Typography, IconButton, Link } from '@mui/material';
+import { Box, Typography, IconButton, Link, Collapse, Divider } from '@mui/material';
 import { TrackListItemProps } from './TrackListItem.types';
 import TagList from '../../TagList/TagList';
-import { Add, Edit, PlayArrow, Remove } from '@mui/icons-material';
+import { Add, Comment, Edit, PlayArrow, Remove } from '@mui/icons-material';
 import { ROUTE_PATHS } from '../../../routes';
 import placeholderImageUrl from '../../../assets/images/placeholder_track_cover.png';
 import { useNavigate } from 'react-router-dom';
 import Spinner from '../../Spinner/Spinner';
+import CommentList from '../../CommentList/CommentList';
 
 export default function TrackListItem({
   name,
@@ -16,10 +17,12 @@ export default function TrackListItem({
   onPlay,
   user,
   isLoading,
+  comments,
+  isCommentSectionOpen,
+  onOpenCommentSection,
   onRemoveFromPlaylist,
 }: TrackListItemProps) {
   const navigate = useNavigate();
-
   const userProfileLink = `${ROUTE_PATHS.PROFILE}?id=${user?.uid}`;
 
   function handleEditClick() {
@@ -67,6 +70,9 @@ export default function TrackListItem({
               <IconButton onClick={() => handleEditClick()}>
                 <Edit fontSize="inherit" />
               </IconButton>
+              <IconButton onClick={() => onOpenCommentSection({ id: name })}>
+                <Comment />
+              </IconButton>
             </Box>
           </Box>
         </Box>
@@ -76,6 +82,9 @@ export default function TrackListItem({
           <TagList tags={tags} />
         </Box>
       </Box>
+      <Collapse in={isCommentSectionOpen}>
+        <CommentList comments={comments} trackName={name} />
+      </Collapse>
     </Box>
   );
 }

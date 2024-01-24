@@ -5,16 +5,16 @@ import { SignIn } from './pages/SignIn/SignIn';
 import { SignUp } from './pages/SignUp/SignUp';
 import { ProtectedRoute } from './components/ProtectedRoute/ProtectedRoute';
 import Profile from './pages/Profile/Profile';
-import Discover from './pages/Discover/Discover';
 import MyFiles from './pages/MyFiles/MyFiles';
 import Editor from './pages/Editor/Editor';
+import Discover from './pages/Discover/Discover';
 
 export const ROUTE_PATHS = {
   SIGN_IN: '/sign-in',
   SIGN_UP: '/sign-up',
   NOT_FOUND: '/not-found',
   PROFILE: '/profile',
-  DISCOVER: '/discover',
+  HOME: '/',
   MY_FILES: '/my-files',
   EDITOR: '/editor',
 };
@@ -39,10 +39,7 @@ export const privateRoutes = [
     path: ROUTE_PATHS.PROFILE,
     element: <Profile />,
   },
-  {
-    path: ROUTE_PATHS.DISCOVER,
-    element: <Discover />,
-  },
+  { path: ROUTE_PATHS.HOME, element: <Discover /> },
   {
     path: ROUTE_PATHS.MY_FILES,
     element: <MyFiles />,

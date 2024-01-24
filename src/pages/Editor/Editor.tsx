@@ -197,7 +197,11 @@ export default function Editor({ playingTrackName }: { playingTrackName?: string
               </DialogContent>
               <DialogActions>
                 <Button onClick={() => setIsTrackDialogOpen(false)}>Cancel</Button>
-                <Button onClick={() => onTrackSelect(false, selectedExistingTrackId)} autoFocus>
+                <Button
+                  variant="contained"
+                  onClick={() => onTrackSelect(false, selectedExistingTrackId)}
+                  autoFocus
+                >
                   Select
                 </Button>
               </DialogActions>

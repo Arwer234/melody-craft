@@ -14,7 +14,7 @@ import {
 import { TrackListProps } from './TrackList.types';
 import TrackListItem from './TrackListItem/TrackListItem';
 import { queryClient } from '../../main';
-import { setPlaylist } from '../../providers/StoreProvider/StoreProvider.helpers';
+import { getComments, setPlaylist } from '../../providers/StoreProvider/StoreProvider.helpers';
 import { Fragment, useContext, useState } from 'react';
 import { UIContext } from '../../providers/UIProvider/UIProvider';
 import { useQuery } from '@tanstack/react-query';
@@ -37,7 +37,10 @@ export default function TrackList({
     toggleAudioPlayer,
     isLoading: isAudioEditorTracksLoading,
   } = useContext(UIContext);
+  const [openedCommentSectionId, setOpenedCommentSectionId] = useState<string | null>(null);
   const { data: users } = useQuery({ queryKey: ['users'], queryFn: getAllUsers });
+
+  const { data: comments } = useQuery({ queryKey: ['comments'], queryFn: getComments });
 
   const visibleTracks = tracks?.filter(track => track.visibility === 'public');
 
@@ -71,6 +74,11 @@ export default function TrackList({
     if (audioPlayer.playlist.length === 0 || audioPlayer.playlist[0].name !== trackName)
       addToPlaylist(trackName);
     if (!audioPlayer.isShown) toggleAudioPlayer();
+  }
+
+  function handleCommentSectionOpen({ id }: { id: string }) {
+    if (openedCommentSectionId === id) setOpenedCommentSectionId(null);
+    else setOpenedCommentSectionId(id);
   }
 
   return (
@@ -107,6 +115,9 @@ export default function TrackList({
               {...item}
               isLoading={isAudioEditorTracksLoading}
               onRemoveFromPlaylist={onRemoveTrack ? () => onRemoveTrack(item.name) : undefined}
+              comments={comments?.filter(comment => comment.trackName === item.name) ?? []}
+              onOpenCommentSection={handleCommentSectionOpen}
+              isCommentSectionOpen={openedCommentSectionId === item.name}
             />
             {index !== tracks.length - 1 && <Divider />}{' '}
             {/* Don't render a divider after the last item */}

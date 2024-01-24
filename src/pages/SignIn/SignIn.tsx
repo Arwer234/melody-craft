@@ -7,10 +7,14 @@ import { useSnackbar } from '../../hooks/useSnackbar/useSnackbar';
 import { SNACKBAR_STATUS } from '../../hooks/useSnackbar/useSnackbar.constants';
 import { signInUsingEmailAndPassword } from '../../providers/AuthProvider/AuthProvider.helpers';
 import { ROUTE_PATHS } from '../../routes';
+import studioImageSrc from '../../assets/images/sign-in-wallpaper.jpg';
+import { useContext } from 'react';
+import { UIContext } from '../../providers/UIProvider/UIProvider';
 
 export function SignIn() {
   const { showSnackbar } = useSnackbar();
   const navigate = useNavigate();
+  const { isMobile } = useContext(UIContext);
 
   async function handleSubmit(values: SignInUser) {
     const result = await signInUsingEmailAndPassword({
@@ -23,15 +27,15 @@ export function SignIn() {
       status: result.status === 'signed_in' ? SNACKBAR_STATUS.SUCCESS : SNACKBAR_STATUS.ERROR,
     });
 
-    navigate(ROUTE_PATHS.DISCOVER);
+    navigate(ROUTE_PATHS.HOME);
   }
   return (
-    <Box display="flex" justifyContent="center" height="100%" alignItems="center">
+    <Box display="flex" height="100%">
       <Paper
         sx={{
           padding: 2,
-          height: ['100%', 600],
-          width: ['100%', 400],
+          height: '100%',
+          width: '100%',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
@@ -75,7 +79,7 @@ export function SignIn() {
                   onChange={handleChange}
                   fullWidth
                 />
-                <Button type="submit" disabled={isSubmitting}>
+                <Button variant="contained" type="submit" disabled={isSubmitting}>
                   Send
                 </Button>
               </Box>
@@ -83,9 +87,19 @@ export function SignIn() {
           )}
         </Formik>
         <Typography textAlign="center" variant="caption" component="p">
-          New to Melody Craft?&nbsp;<Link to="/sign-up">Sign up</Link>
+          New to Melody Craft?&nbsp;
+          <Link to="/sign-up">Sign up</Link>
         </Typography>
       </Paper>
+      {!isMobile && (
+        <Box width="100%" height="100%">
+          <img
+            style={{ height: '100%', width: '100%' }}
+            src={studioImageSrc}
+            alt="studio image src"
+          />
+        </Box>
+      )}
     </Box>
   );
 }

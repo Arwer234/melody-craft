@@ -1,4 +1,4 @@
-import { TrackExtendedDto } from '../../../providers/StoreProvider/StoreProvider.types';
+import { CommentDto, TrackExtendedDto } from '../../../providers/StoreProvider/StoreProvider.types';
 import { FirestoreUserExtended } from '../../../providers/AuthProvider/AuthProvider.types';
 
 export type TrackListItemCustomProps = {
@@ -9,6 +9,9 @@ export type TrackListItemCustomProps = {
   user?: FirestoreUserExtended;
   isLoading?: boolean;
   onRemoveFromPlaylist?: () => void;
+  comments: Array<CommentDto>;
+  onOpenCommentSection: ({ id }: { id: string }) => void;
+  isCommentSectionOpen: boolean;
 };
 
 export type TrackListItemProps = TrackExtendedDto & TrackListItemCustomProps;

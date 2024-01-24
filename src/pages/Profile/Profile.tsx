@@ -178,7 +178,9 @@ export default function Profile() {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setIsPlaylistTitleDialogOpen(false)}>Cancel</Button>
-            <Button onClick={() => void handleCreatePlaylistClick()}>Create</Button>
+            <Button variant="contained" onClick={() => void handleCreatePlaylistClick()}>
+              Create
+            </Button>
           </DialogActions>
         </Dialog>
         <FileDialog

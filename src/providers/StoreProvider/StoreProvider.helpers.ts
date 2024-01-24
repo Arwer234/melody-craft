@@ -16,6 +16,7 @@ import {
 } from 'firebase/firestore';
 import {
   AudioEditorTrack,
+  CommentDto,
   FileMetadata,
   PlaylistDto,
   PlaylistExtendedDto,
@@ -547,5 +548,39 @@ export async function setFirestoreUserImage({
   return {
     status: SNACKBAR_STATUS.SUCCESS,
     message: 'Image successfully saved!',
+  };
+}
+
+export async function getComments() {
+  const q = query(collection(db, 'comments'));
+  const querySnapshot = await getDocs(q);
+  const data: Array<CommentDto> = [];
+  querySnapshot.forEach(doc => {
+    data.push({ id: doc.id, ...doc.data() } as CommentDto);
+  });
+
+  return data;
+}
+
+export async function addComment({
+  trackName,
+  text,
+}: Pick<CommentDto, 'text' | 'trackName'>): Promise<{
+  status: (typeof SNACKBAR_STATUS)[keyof typeof SNACKBAR_STATUS];
+  message: string;
+}> {
+  const currentUserUid = auth.currentUser?.uid;
+  const newComment = {
+    trackName,
+    text,
+    ownerUid: currentUserUid,
+    date: Timestamp.fromDate(new Date()),
+  };
+
+  await addDoc(collection(db, 'comments'), newComment);
+
+  return {
+    status: SNACKBAR_STATUS.SUCCESS,
+    message: 'Comment successfully added!',
   };
 }

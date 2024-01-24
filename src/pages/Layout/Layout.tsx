@@ -15,8 +15,7 @@ import SideDrawer from '../../components/SideDrawer/SideDrawer';
 import useAuth from '../../hooks/useAuth/useAuth';
 import { UIContext } from '../../providers/UIProvider/UIProvider';
 import { useContext, useMemo, useState } from 'react';
-
-const DRAWER_WIDTH = '256px';
+import { APPBAR_HEIGHT, DRAWER_WIDTH } from './Layout.constants';
 
 export function Layout() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
@@ -48,16 +47,22 @@ export function Layout() {
 
   return (
     <ThemeProvider theme={theme}>
-      <Box height="100%" width="100%" display="flex" flexDirection="column">
+      <Box
+        width="100%"
+        display="flex"
+        height="100%"
+        flexDirection="column"
+        overflow={['initial', 'hidden']}
+      >
         <CssBaseline />
         <NavigationBar mode={mode} onModeChange={toggleMode} />
         {isUserSignedIn && <SideDrawer width="256px" />}
         <Box
-          marginLeft={isDrawerShown ? DRAWER_WIDTH : '0'}
+          marginLeft={isDrawerShown ? `${DRAWER_WIDTH}px` : '0'}
           sx={{
             transition: 'margin-left 200ms',
-            height: '100%',
-            width: `calc(100% - ${isDrawerShown ? DRAWER_WIDTH : 0})`,
+            height: `calc(100% - ${APPBAR_HEIGHT}px)`,
+            width: `calc(100% - ${isDrawerShown ? `${DRAWER_WIDTH}px` : '0px'})`,
           }}
           display="flex"
           flexDirection="column"

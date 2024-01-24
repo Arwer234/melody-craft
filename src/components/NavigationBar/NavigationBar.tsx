@@ -49,7 +49,7 @@ export default function NavigationBar({ mode, onModeChange }: NavigationBarProps
   }
 
   async function handleNotificationItemClick(id: string) {
-    navigate(ROUTE_PATHS.DISCOVER);
+    navigate(ROUTE_PATHS.HOME);
     setIsNotificationsOpen(false);
 
     if (notifications?.find(notification => notification.id === id)?.isRead) return;

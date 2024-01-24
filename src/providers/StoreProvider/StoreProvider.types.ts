@@ -62,3 +62,11 @@ export type PlaylistDto = {
 export type PlaylistExtendedDto = PlaylistDto & {
   tracks: Array<TrackExtendedDto>;
 };
+
+export type CommentDto = {
+  ownerUid: string;
+  trackName: string;
+  text: string;
+  date: Timestamp;
+  id: string;
+};

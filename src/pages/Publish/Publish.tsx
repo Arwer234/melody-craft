@@ -185,7 +185,9 @@ export default function Publish({
                       <Typography variant="body2">
                         {file?.name ?? 'No track image uploaded'}
                       </Typography>
-                      <Button onClick={() => setIsDialogOpen(true)}>Upload file</Button>
+                      <Button variant="outlined" onClick={() => setIsDialogOpen(true)}>
+                        Upload file
+                      </Button>
                     </Box>
                     <Box mt={3}>
                       <FormLabel id="visibility-label">Visibility</FormLabel>
@@ -227,7 +229,7 @@ export default function Publish({
                       </Box>
                     )}
                   </Box>
-                  <Button type="submit" disabled={isSubmitting}>
+                  <Button variant="contained" type="submit" disabled={isSubmitting}>
                     Publish
                   </Button>
                 </Box>

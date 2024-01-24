@@ -8,10 +8,14 @@ import { SNACKBAR_STATUS } from '../../hooks/useSnackbar/useSnackbar.constants';
 import { createUserUsingEmailAndPassword } from '../../providers/AuthProvider/AuthProvider.helpers';
 import { AUTH_STATUSES } from '../../providers/AuthProvider/AuthProvider.constants';
 import { ROUTE_PATHS } from '../../routes';
+import studioImageSrc from '../../assets/images/sign-in-wallpaper.jpg';
+import { useContext } from 'react';
+import { UIContext } from '../../providers/UIProvider/UIProvider';
 
 export function SignUp() {
   const { showSnackbar } = useSnackbar();
   const navigate = useNavigate();
+  const { isMobile } = useContext(UIContext);
 
   async function handleSubmit(values: SignUpUser) {
     const result = await createUserUsingEmailAndPassword({
@@ -29,17 +33,12 @@ export function SignUp() {
     navigate(ROUTE_PATHS.HOME);
   }
   return (
-    <Box
-      display="flex"
-      flexDirection={['row']}
-      justifyContent="center"
-      height="100%"
-      alignItems="center"
-    >
+    <Box display="flex" height="100%">
       <Paper
         sx={{
           padding: 2,
-          height: ['100%', 600],
+          height: '100%',
+          width: '100%',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
@@ -103,7 +102,7 @@ export function SignUp() {
                   onChange={handleChange}
                   fullWidth
                 />
-                <Button type="submit" disabled={isSubmitting}>
+                <Button variant="contained" type="submit" disabled={isSubmitting}>
                   Send
                 </Button>
               </Box>
@@ -111,9 +110,19 @@ export function SignUp() {
           )}
         </Formik>
         <Typography textAlign="center" variant="caption" component="p">
-          Already have an account?&nbsp;<Link to="/sign-in">Sign in</Link>
+          Already have an account?&nbsp;
+          <Link to="/sign-in">Sign in</Link>
         </Typography>
       </Paper>
+      {!isMobile && (
+        <Box width="100%" height="100%">
+          <img
+            style={{ height: '100%', width: '100%' }}
+            src={studioImageSrc}
+            alt="studio image src"
+          />
+        </Box>
+      )}
     </Box>
   );
 }
