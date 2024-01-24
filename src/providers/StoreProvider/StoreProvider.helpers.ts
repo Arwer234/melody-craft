@@ -142,16 +142,17 @@ export async function getAudioEditorTracks({
   }
 
   const querySnapshot = await getDocs(q);
-  const data: Array<AudioEditorTrack> = [];
+  const data: Array<Omit<AudioEditorTrack, 'src'>> = [];
   querySnapshot.forEach(doc => {
-    const parsedDoc = { id: doc.id, ...doc.data() };
-    parsedDoc.playlines = parsedDoc.playlines.map((playline: any) => {
+    const parsedDoc = { id: doc.id, ...(doc.data() as TrackDto) };
+    parsedDoc.playlines = parsedDoc.playlines.map((playline: Array<StoreSample>) => {
       return [...Object.values(playline)];
     });
     data.push(parsedDoc);
   });
 
-  const resolvedData = await Promise.all(
+  //@ts-expect-error unknown problem with types
+  const resolvedData: Array<AudioEditorTrack> = await Promise.all(
     data.map(async track => {
       const resolvedPlaylines = await Promise.all(
         track.playlines.map(async playline => {

@@ -196,7 +196,7 @@ export default function AudioEditor({
       setSelectedTrackId(playlines.find(line => line.length > 0)?.[0].id ?? null);
   }
 
-  async function onSamplePickerItemDrag(event: React.DragEvent<HTMLDivElement>, fileName: string) {
+  async function onSamplePickerItemDrag(_event: React.DragEvent<HTMLDivElement>, fileName: string) {
     if (playlines.some(line => line.some(sample => sample.name === fileName))) {
       showSnackbar({
         message: 'This sample is already added, try copying the existing one',

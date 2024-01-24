@@ -1,4 +1,4 @@
-import { Box, Typography, IconButton, Link, Collapse, Divider } from '@mui/material';
+import { Box, Typography, IconButton, Link, Collapse } from '@mui/material';
 import { TrackListItemProps } from './TrackListItem.types';
 import TagList from '../../TagList/TagList';
 import { Add, Comment, Edit, PlayArrow, Remove } from '@mui/icons-material';
