@@ -7,6 +7,8 @@ import placeholderImageUrl from '../../../assets/images/placeholder_track_cover.
 import { useNavigate } from 'react-router-dom';
 import Spinner from '../../Spinner/Spinner';
 import CommentList from '../../CommentList/CommentList';
+import { useContext } from 'react';
+import { UIContext } from '../../../providers/UIProvider/UIProvider';
 
 export default function TrackListItem({
   name,
@@ -23,6 +25,7 @@ export default function TrackListItem({
   onRemoveFromPlaylist,
 }: TrackListItemProps) {
   const navigate = useNavigate();
+  const { isMobile } = useContext(UIContext);
   const userProfileLink = `${ROUTE_PATHS.PROFILE}?id=${user?.uid}`;
 
   function handleEditClick() {
@@ -30,7 +33,13 @@ export default function TrackListItem({
   }
   return (
     <Box>
-      <Box display="flex" padding={2} justifyContent="space-around" gap={3}>
+      <Box
+        display="flex"
+        flexDirection={['column', 'row']}
+        padding={2}
+        justifyContent="space-around"
+        gap={3}
+      >
         {onRemoveFromPlaylist && (
           <Box display="flex" alignItems="center">
             <IconButton onClick={() => onRemoveFromPlaylist()}>
@@ -40,8 +49,8 @@ export default function TrackListItem({
         )}
         <Box flex={1} display="flex" gap={2}>
           <img
-            width={128}
-            height={128}
+            width={isMobile ? 64 : 128}
+            height={isMobile ? 64 : 128}
             src={image_path ?? placeholderImageUrl}
             alt={`${user?.displayName} ${name}`}
           />
@@ -77,7 +86,7 @@ export default function TrackListItem({
           </Box>
         </Box>
 
-        <Box display="flex" flexDirection="column" gap={2}>
+        <Box display="flex" flexDirection="column" gap={2} minWidth={['auto', 300]}>
           <Typography variant="caption">{date.toDate().toLocaleDateString()}</Typography>
           <TagList tags={tags} />
         </Box>

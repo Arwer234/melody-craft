@@ -293,7 +293,13 @@ export async function setTrack({
   isEditingAnotherUsersTrack: boolean;
 }): Promise<{ status: (typeof SNACKBAR_STATUS)[keyof typeof SNACKBAR_STATUS]; message: string }> {
   const currentUserUid = auth.currentUser?.uid;
-  const q = query(collection(db, 'tracks'), where('name', '==', previousName));
+  let q;
+
+  if (previousName) {
+    q = query(collection(db, 'tracks'), where('name', '==', previousName));
+  } else {
+    q = query(collection(db, 'tracks'), where('name', '==', name));
+  }
 
   const querySnapshot = await getDocs(q);
   const existingTrack =

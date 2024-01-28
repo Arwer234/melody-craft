@@ -53,6 +53,9 @@ export default function MusicTileList({
             {/* Don't render a divider after the last item */}
           </Fragment>
         ))}
+      {tracksData?.length === 0 && samplesData?.length === 0 && (
+        <EmptyView description="There are no files yet!" />
+      )}
     </Box>
   );
 }

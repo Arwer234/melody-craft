@@ -19,6 +19,7 @@ import { Fragment, useContext, useState } from 'react';
 import { UIContext } from '../../providers/UIProvider/UIProvider';
 import { useQuery } from '@tanstack/react-query';
 import { getAllUsers } from '../../providers/AuthProvider/AuthProvider.helpers';
+import EmptyView from '../EmptyView/EmptyView';
 
 export default function TrackList({
   tracks,
@@ -106,6 +107,9 @@ export default function TrackList({
         </DialogActions>
       </Dialog>
       <Box display="flex" gap={1} flexDirection="column" width={width}>
+        {visibleTracks?.length === 0 && (
+          <EmptyView description="There are no tracks. Try to add something!" />
+        )}
         {visibleTracks?.map((item, index) => (
           <Fragment key={item.name}>
             <TrackListItem

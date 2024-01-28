@@ -18,7 +18,7 @@ export default function Controls({
           <Box display="flex" alignItems="center" flex={1}>
             {trackName && <Typography variant="caption">{trackName}</Typography>}
           </Box>
-          <Box display="flex" gap={1} flex={5} justifyContent="center">
+          <Box display="flex" gap={1} flex={10} justifyContent="center">
             <IconButton size="large" onClick={onSkipPrevious}>
               <SkipPrevious fontSize="inherit" />
             </IconButton>

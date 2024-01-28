@@ -41,7 +41,7 @@ export default function Profile() {
   const location = useLocation();
   const [isPlaylistTitleDialogOpen, setIsPlaylistTitleDialogOpen] = useState(false);
   const [playlistTitle, setPlaylistTitle] = useState('');
-  const { showSnackbar } = useContext(UIContext);
+  const { showSnackbar, isMobile } = useContext(UIContext);
   const [isDescriptionEditMode, setIsDescriptionEditMode] = useState(false);
   const [description, setDescription] = useState('');
   const [isImageEditMode, setIsImageEditMode] = useState(false);
@@ -194,13 +194,13 @@ export default function Profile() {
         </Typography>
         <Box display="flex" flexDirection="column" gap={2}>
           <Paper>
-            <Box padding={2} display="flex" gap={8}>
+            <Box padding={2} display="flex" gap={[2, 8]}>
               <Box position="relative">
                 <Box margin={2}>
                   <img
                     style={{ borderRadius: '50%' }}
-                    width={192}
-                    height={192}
+                    width={isMobile ? 64 : 192}
+                    height={isMobile ? 64 : 192}
                     src={userData?.imagePath ?? placeholderAvatar}
                   />
                 </Box>

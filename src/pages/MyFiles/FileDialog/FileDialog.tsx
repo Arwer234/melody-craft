@@ -44,7 +44,7 @@ export default function FileDialog({
     <Dialog onClose={onClose} open={isOpen}>
       <DialogTitle>Upload a file</DialogTitle>
       <DialogContent>
-        <Box width={512}>
+        <Box width={['100%', 512]}>
           <MuiFileInput
             inputProps={{ accept: acceptedFileTypes }}
             value={file}
