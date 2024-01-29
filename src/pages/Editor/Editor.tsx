@@ -11,6 +11,7 @@ import {
   Step,
   StepLabel,
   Stepper,
+  Typography,
   useTheme,
 } from '@mui/material';
 import AudioEditor from '../../components/AudioEditor/AudioEditor';
@@ -42,6 +43,7 @@ export default function Editor({ playingTrackName }: { playingTrackName?: string
   const [playlines, setPlaylines] = useState<Array<Array<Sample>>>([]);
   const { userInfo } = useAuth();
   const theme = useTheme();
+  const { isMobile } = useContext(UIContext);
 
   const location = useLocation();
   const existingTrackName =
@@ -153,6 +155,15 @@ export default function Editor({ playingTrackName }: { playingTrackName?: string
     );
   }
 
+  if (isMobile) {
+    return (
+      <Box display="flex" flexDirection="column" justifyContent="center" height="100%" width="100%">
+        <Typography variant="h6" align="center">
+          You can use the editor only on desktop version of the app.
+        </Typography>
+      </Box>
+    );
+  }
   return (
     <Box
       pt={2}
