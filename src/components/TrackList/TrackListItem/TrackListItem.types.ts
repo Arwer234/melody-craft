@@ -9,6 +9,7 @@ export type TrackListItemCustomProps = {
   user?: FirestoreUserExtended;
   isLoading?: boolean;
   onRemoveFromPlaylist?: () => void;
+  onRemove?: () => void;
   comments: Array<CommentDto>;
   onOpenCommentSection: ({ id }: { id: string }) => void;
   isCommentSectionOpen: boolean;

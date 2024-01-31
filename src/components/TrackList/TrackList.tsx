@@ -26,6 +26,7 @@ export default function TrackList({
   isLoading,
   playlists,
   width,
+  onRemoveTrackFromPlaylist,
   onRemoveTrack,
 }: TrackListProps) {
   const [trackNameToAdd, setTrackNameToAdd] = useState<string | null>(null);
@@ -42,6 +43,7 @@ export default function TrackList({
   const { data: users } = useQuery({ queryKey: ['users'], queryFn: getAllUsers });
 
   const { data: comments } = useQuery({ queryKey: ['comments'], queryFn: getComments });
+  if (playlists) console.log('tracks: ', tracks);
 
   const visibleTracks = tracks?.filter(track => track.visibility === 'public');
 
@@ -118,10 +120,13 @@ export default function TrackList({
               onPlay={handlePlayClick}
               {...item}
               isLoading={isAudioEditorTracksLoading}
-              onRemoveFromPlaylist={onRemoveTrack ? () => onRemoveTrack(item.name) : undefined}
+              onRemoveFromPlaylist={
+                onRemoveTrackFromPlaylist ? () => onRemoveTrackFromPlaylist(item.name) : undefined
+              }
               comments={comments?.filter(comment => comment.trackName === item.name) ?? []}
               onOpenCommentSection={handleCommentSectionOpen}
               isCommentSectionOpen={openedCommentSectionId === item.name}
+              onRemove={onRemoveTrack ? () => onRemoveTrack({ name: item.name }) : undefined}
             />
             {index !== tracks.length - 1 && <Divider />}{' '}
             {/* Don't render a divider after the last item */}

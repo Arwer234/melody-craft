@@ -4,5 +4,5 @@ export type PlaylistListProps = {
   playlists: Array<PlaylistExtendedDto>;
   isLoading?: boolean;
   onRemovePlaylist: (playlistName: string) => void;
-  onRemoveTrack: (playlistName: string, trackName: string) => void;
+  onRemoveTrackFromPlaylist: (playlistName: string, trackName: string) => void;
 };

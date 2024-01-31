@@ -9,5 +9,6 @@ export type TrackListProps = {
   playlists: Array<PlaylistExtendedDto>;
   ownerUid?: string;
   width?: string | number;
-  onRemoveTrack?: (trackName: string) => void;
+  onRemoveTrackFromPlaylist?: (trackName: string) => void;
+  onRemoveTrack?: ({ name }: { name: string }) => Promise<void>;
 };

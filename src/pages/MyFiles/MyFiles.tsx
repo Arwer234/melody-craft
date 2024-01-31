@@ -6,6 +6,7 @@ import { FileType, MusicTileDialogMode } from './MyFiles.types';
 import {
   addMusicFile,
   deleteMusicFile,
+  deleteTrack,
   getPlaylists,
   getTracks,
 } from '../../providers/StoreProvider/StoreProvider.helpers';
@@ -26,6 +27,7 @@ import { useQuery } from '@tanstack/react-query';
 import TrackList from '../../components/TrackList/TrackList';
 import AudioPlayer from '../../components/AudioPlayer/AudioPlayer';
 import { UIContext } from '../../providers/UIProvider/UIProvider';
+import { queryClient } from '../../main';
 
 export default function MyFiles() {
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
@@ -100,6 +102,16 @@ export default function MyFiles() {
     }
 
     setMusicTileDialogMode(null);
+  }
+
+  async function handleTrackRemove({ name }: { name: string }) {
+    const result = await deleteTrack({ name });
+    if (result.status === 'success') {
+      showSnackbar({ message: 'Track deleted', status: 'success' });
+      void queryClient.invalidateQueries({ queryKey: ['tracks'] });
+    } else {
+      showSnackbar({ message: 'Error while deleting track', status: 'error' });
+    }
   }
 
   return (
@@ -181,6 +193,7 @@ export default function MyFiles() {
                 tracks={tracks ?? []}
                 isLoading={isTracksLoading}
                 playlists={playlists ?? []}
+                onRemoveTrack={handleTrackRemove}
               />
             </Box>
           </Paper>

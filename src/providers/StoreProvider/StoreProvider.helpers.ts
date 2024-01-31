@@ -443,7 +443,22 @@ export async function deletePlaylist({ name }: Pick<PlaylistDto, 'name'>) {
 
 export async function deleteTrack({ name }: Pick<TrackDto, 'name'>) {
   const trackRef = doc(db, 'tracks', name);
+
   await deleteDoc(trackRef);
+
+  const col = collection(db, 'playlists');
+  const q = query(col, where('trackNames', 'array-contains', name));
+  const querySnapshot = await getDocs(q);
+
+  const playlists = querySnapshot.docs.map(doc => doc.data() as PlaylistDto);
+
+  await Promise.all(
+    playlists.map(async playlist => {
+      const newTrackNames = playlist.trackNames.filter(trackName => trackName !== name);
+      const playlistRef = doc(db, 'playlists', playlist.name);
+      await updateDoc(playlistRef, { trackNames: newTrackNames });
+    }),
+  );
 
   return {
     status: SNACKBAR_STATUS.SUCCESS,

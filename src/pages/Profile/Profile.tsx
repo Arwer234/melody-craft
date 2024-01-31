@@ -70,6 +70,7 @@ export default function Profile() {
   const filteredTracks = isOwnPage
     ? userTracks
     : userTracks?.filter(track => track.visibility === 'public');
+  console.log('filteredTracks: ', filteredTracks);
 
   async function handleCreatePlaylistClick() {
     setIsPlaylistTitleDialogOpen(false);
@@ -272,7 +273,7 @@ export default function Profile() {
                 <Typography variant="h5">Playlists</Typography>
                 <PlaylistList
                   playlists={playlists ?? []}
-                  onRemoveTrack={(playlistName: string, trackName: string) =>
+                  onRemoveTrackFromPlaylist={(playlistName: string, trackName: string) =>
                     void handleRemoveTrackFromPlaylist({ playlistName, trackName })
                   }
                   onRemovePlaylist={(playlistName: string) =>

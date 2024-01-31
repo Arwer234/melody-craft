@@ -7,12 +7,13 @@ import Spinner from '../Spinner/Spinner';
 export default function PlaylistList({
   playlists,
   onRemovePlaylist,
-  onRemoveTrack,
+  onRemoveTrackFromPlaylist,
   isLoading,
 }: PlaylistListProps) {
   if (isLoading) {
     return <Spinner />;
   }
+
   return (
     <Box height="100%">
       {playlists?.map((playlist, key) => (
@@ -22,8 +23,9 @@ export default function PlaylistList({
             <TrackList
               tracks={playlist.tracks}
               playlists={playlists}
-              onRemoveTrack={(trackName: string) => onRemoveTrack(playlist.name, trackName)}
-              width="70%"
+              onRemoveTrackFromPlaylist={(trackName: string) =>
+                onRemoveTrackFromPlaylist(playlist.name, trackName)
+              }
             />
           </Box>
         </Box>

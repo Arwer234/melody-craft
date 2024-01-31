@@ -1,7 +1,7 @@
 import { Box, Typography, IconButton, Link, Collapse } from '@mui/material';
 import { TrackListItemProps } from './TrackListItem.types';
 import TagList from '../../TagList/TagList';
-import { Add, Comment, Edit, PlayArrow, Remove } from '@mui/icons-material';
+import { Add, Comment, DeleteForever, Edit, PlayArrow, Remove } from '@mui/icons-material';
 import { ROUTE_PATHS } from '../../../routes';
 import placeholderImageUrl from '../../../assets/images/placeholder_track_cover.png';
 import { useNavigate } from 'react-router-dom';
@@ -23,6 +23,7 @@ export default function TrackListItem({
   isCommentSectionOpen,
   onOpenCommentSection,
   onRemoveFromPlaylist,
+  onRemove,
 }: TrackListItemProps) {
   const navigate = useNavigate();
   const { isMobile } = useContext(UIContext);
@@ -82,6 +83,11 @@ export default function TrackListItem({
               <IconButton onClick={() => onOpenCommentSection({ id: name })}>
                 <Comment />
               </IconButton>
+              {onRemove && (
+                <IconButton onClick={onRemove}>
+                  <DeleteForever />
+                </IconButton>
+              )}
             </Box>
           </Box>
         </Box>
