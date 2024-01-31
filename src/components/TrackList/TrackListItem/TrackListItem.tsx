@@ -86,7 +86,13 @@ export default function TrackListItem({
           </Box>
         </Box>
 
-        <Box display="flex" flexDirection="column" gap={2} minWidth={['auto', 300]}>
+        <Box
+          display="flex"
+          flexDirection="column"
+          gap={2}
+          minWidth={['auto', 300]}
+          alignItems="flex-end"
+        >
           <Typography variant="caption">{date.toDate().toLocaleDateString()}</Typography>
           <TagList tags={tags} />
         </Box>

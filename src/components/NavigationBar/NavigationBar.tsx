@@ -27,7 +27,6 @@ export default function NavigationBar({ mode, onModeChange }: NavigationBarProps
     queryKey: ['notifications'],
     queryFn: getNotifications,
   });
-  console.log('notifications: ', notifications);
 
   function handleSignOutClick() {
     void signOutUser();

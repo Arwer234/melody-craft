@@ -12,7 +12,7 @@ export function SamplePicker({
     return <Spinner />;
   }
   return (
-    <Paper sx={{ padding: 2, height: 'calc(100% - 84px)', overflowY: 'scroll' }}>
+    <Paper sx={{ padding: 2 }}>
       <MusicTileList
         samplesData={sampleData}
         fileType="sample"

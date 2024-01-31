@@ -15,12 +15,23 @@ export default function MusicTileList({
   onPlay,
   onAdd,
   variant = 'default',
+  maxHeight = 312,
+  isFullHeight,
 }: MusicTileListProps) {
   if (!isLoaded) {
     return <EmptyView description="There are no files yet!" />;
   }
+
+  const resolvedHeight = isFullHeight ? '100%' : maxHeight;
   return (
-    <Box display="flex" flexDirection="column" gap={2}>
+    <Box
+      display="flex"
+      flexDirection="column"
+      gap={2}
+      height="100%"
+      sx={{ overflowY: 'scroll' }}
+      maxHeight={resolvedHeight}
+    >
       {fileType === 'track' &&
         tracksData?.map((track, index) => (
           <Fragment key={`${fileType} ${track.name}`}>

@@ -12,4 +12,6 @@ export type MusicTileListProps = {
   samplesData?: Array<FileMetadata>;
   onAdd?: (name: string) => void;
   variant?: 'default' | 'dense';
+  maxHeight?: number;
+  isFullHeight?: boolean;
 };

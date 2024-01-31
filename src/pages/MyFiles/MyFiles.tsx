@@ -127,7 +127,7 @@ export default function MyFiles() {
           fileName={selectedFileName}
         />
 
-        <Box display="flex" flexDirection={['column', 'row']} gap={2}>
+        <Box display="flex" flexDirection={['column', 'row']} gap={2} height="100%">
           <Paper sx={{ width: '100%', height: '100%' }}>
             <Box
               padding={2}
@@ -136,6 +136,7 @@ export default function MyFiles() {
               flexDirection="column"
               justifyContent="space-between"
               minHeight={[350, 700]}
+              gap={2}
             >
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Typography variant="h5">Samples</Typography>
@@ -150,6 +151,7 @@ export default function MyFiles() {
                 fileType="sample"
                 samplesData={sampleFilesData}
                 isLoaded={isMusicFilesMetadataLoaded}
+                isFullHeight
               />
 
               <Box display="flex" justifyContent="flex-end">

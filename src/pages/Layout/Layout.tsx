@@ -35,6 +35,15 @@ export function Layout() {
             main: '#218cf0',
           },
         },
+        components: {
+          MuiButton: {
+            styleOverrides: {
+              root: {
+                borderRadius: '16px',
+              },
+            },
+          },
+        },
       }),
     [mode],
   );

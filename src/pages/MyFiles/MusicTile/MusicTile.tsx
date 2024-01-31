@@ -65,7 +65,7 @@ export default function MusicTile({
 
   return (
     <Box
-      sx={{ width: '100%', cursor: onDrag ? 'grab' : 'default' }}
+      sx={{ width: '100%', cursor: onDrag ? 'grab' : 'default', maxHeight: '128px' }}
       onDragEnd={
         onDrag
           ? (event: React.DragEvent<HTMLDivElement>) =>
@@ -74,15 +74,15 @@ export default function MusicTile({
       }
       draggable={onDrag ? true : false}
     >
-      <Box padding={variant === 'default' ? 2 : 0} display="flex" width="100%">
-        <Box display="flex" minWidth={200}>
+      <Box padding={variant === 'default' ? 2 : 0} display="flex" width="100%" alignItems="center">
+        <Box display="flex" minWidth={200} flex={2}>
           <Box display="flex" gap={2} flexDirection="column" width="100%">
-            <Typography variant="h5">{fileName}</Typography>
+            <Typography variant="h6">{fileName}</Typography>
             {sample !== undefined && <Typography>format: {fileExtension}</Typography>}
             {track !== undefined && <TagList tags={track.tags} />}
           </Box>
         </Box>
-        <Box id={containerId} width="100%" height={64} />
+        <Box id={containerId} width="100%" height={64} flex={3} />
         {sample !== undefined && (
           <Box display="flex" alignItems="center">
             <IconButton onClick={handlePlayClick} color="primary">

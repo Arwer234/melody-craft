@@ -355,7 +355,7 @@ export default function AudioEditor({
             <Box height="100%" display="flex" flexDirection="column" gap={2} padding={2}>
               <Box
                 position="relative"
-                sx={{ overflowX: 'scroll', overflowY: 'hidden', minHeight: 600 }}
+                sx={{ overflowX: 'scroll', overflowY: 'hidden', minHeight: 500 }}
                 onDragOver={(event: React.DragEvent<HTMLDivElement>) => event.preventDefault()}
               >
                 {
