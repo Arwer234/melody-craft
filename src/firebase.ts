@@ -2,13 +2,13 @@ import { initializeApp } from 'firebase/app';
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: 'AIzaSyCTGtfPKcwu6Cd48QQtKdCfpP6PUJQKRNo',
-  authDomain: 'melody-craft.firebaseapp.com',
-  projectId: 'melody-craft',
-  storageBucket: 'melody-craft.appspot.com',
-  messagingSenderId: '562877252667',
-  appId: '1:562877252667:web:876c1ee6d6c1005b04081e',
-  measurementId: 'G-ZM3QWKY6D8',
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase
